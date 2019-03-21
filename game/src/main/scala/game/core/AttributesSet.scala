@@ -1,4 +1,4 @@
-package game.abstracts
+package game.core
 
 import scala.reflect.ClassTag
 

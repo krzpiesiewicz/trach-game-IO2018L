@@ -1,4 +1,4 @@
-package game.abstracts
+package game.core
 
 trait Builder {
   def compose(another: Builder): Builder

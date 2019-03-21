@@ -3,12 +3,8 @@ import com.typesafe.scalalogging.Logger
 
 import game.Logging.logger
 import game.example._
-import game.abstracts._
-import game.abstracts.Card.CardId
-import com.google.inject.AbstractModule
-import com.google.inject.name.Names
-import com.google.inject.Guice
-import game.abstracts.Card.CardId
+import game.core._
+import game.core.Card.CardId
 
 class GameTest extends FunSuite {
   

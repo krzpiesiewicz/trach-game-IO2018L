@@ -1,11 +1,11 @@
-package game.abstracts
+package game.core
 
 trait GameState {
   def attributes: AttributesSet[GlobalAttribute]
 }
 
-class InitialState(characters: Characters, roundsManager: RoundsManager) extends GameState {
-  val attributes = AttributesSet(Seq(characters, roundsManager))
+class InitialState(players: Players, roundsManager: RoundsManager) extends GameState {
+  val attributes = AttributesSet(Seq(players, roundsManager))
 }
 
 class NormalState(override val attributes: AttributesSet[GlobalAttribute]) extends GameState

@@ -1,6 +1,6 @@
 package game.example
 
-import game.abstracts._
+import game.core._
 
 object DefaultAttributes {
 
@@ -8,10 +8,10 @@ object DefaultAttributes {
 
   class DefaultHand(val maxCards: Int = 5, val cards: Seq[Card]) extends Hand
 
-  class DefaultActiveCards(val cards: Seq[Card] = Seq.empty) extends CharacterActiveCards
+  class DefaultActiveCards(val cards: Seq[Card] = Seq.empty) extends PlayerActiveCards
 
   class DefaultTargetChooser extends TargetChooser {
-    def charactersForTargets(circleOfCharacters: CircleOfCharacters) = circleOfCharacters.characters
+    def playersForTargets(circleOfPlayers: CircleOfPlayers) = circleOfPlayers.players
   }
   
   class DefaultCoveredCardsStack(val cards: Vector[Card]) extends CoveredCardsStack
@@ -20,9 +20,9 @@ object DefaultAttributes {
   
   class DefaultGlobalActiveCards(val cards: Vector[Card]) extends GlobalActiveCards
 
-  class DefaultCharacters(val circleOfCharacters: CircleOfCharacters) extends Characters
+  class DefaultPlayers(val circleOfPlayers: CircleOfPlayers) extends Players
 
-  class DefaultRoundsManager(val currentCharacter: Character) extends RoundsManager {
-    def nextCharacter(circleOfCharacters: CircleOfCharacters) = circleOfCharacters.nextTo(currentCharacter)
+  class DefaultRoundsManager(val currentPlayer: Player) extends RoundsManager {
+    def nextPlayer(circleOfPlayers: CircleOfPlayers) = circleOfPlayers.nextTo(currentPlayer)
   }
 }

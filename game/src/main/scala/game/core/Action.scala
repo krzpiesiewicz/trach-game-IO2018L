@@ -1,4 +1,4 @@
-package game.abstracts
+package game.core
 
 trait Action {
   def apply: GameState
@@ -17,9 +17,9 @@ trait ActionBuilder {
 }
 
 trait StartingCardActionBuilderFactory[C <: StartingCard] {
-  def apply(card: C, character: Character, state: GameState): ActionBuilder
+  def apply(card: C, character: Player, state: GameState): ActionBuilder
 }
 
 object StartingCardActionBuilder {
-  def apply[C <: StartingCard](card: C, character: Character, state: GameState)(implicit builder: StartingCardActionBuilderFactory[C]) = builder(card, character, state)
+  def apply[C <: StartingCard](card: C, character: Player, state: GameState)(implicit builder: StartingCardActionBuilderFactory[C]) = builder(card, character, state)
 }

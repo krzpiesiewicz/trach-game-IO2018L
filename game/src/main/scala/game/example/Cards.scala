@@ -1,7 +1,7 @@
 package game.example
 
-import game.abstracts._
-import game.abstracts.Card.CardId
+import game.core._
+import game.core.Card.CardId
 
 final class AtomicButtonCard protected () extends DefaultCardWithPriority("AtomicButton", 1) with OffensiveCard with StartingCard
 

@@ -8,13 +8,16 @@ import game.core.Card.CardId
 
 class GameTest extends FunSuite {
   
-  implicit val cardFactory = new DefaultCardFactory
-  
-  test("simple game") {
-    val c0 = Card[AttackCard]()
-    logger.info(c0.id.toString())
+  test("CardFactory test") {
+    implicit val cardFactory = new DefaultCardFactory
     
-    val c1 = Card[CatCard]()
-    logger.info(c1.id.toString())
+    val c0 = Card[AttackCard]()
+    logger.info(s"${c0.id}, ${c0.tag}")
+    
+    val c1 = Card[CatCard](id = 5)
+    logger.info(s"${c1.id}, ${c1.tag}")
+    
+    val c2 = Card[CatCard]()
+    logger.info(s"${c2.id}, ${c2.tag}")
   }
 }

@@ -15,5 +15,6 @@ lazy val game = (project in file("game"))
 lazy val commonSettings = Seq(
   scalaVersion := "2.12.6",
   organization := "com.example",
-  libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
+  libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test",
+  scalacOptions ++= Seq("-feature")
 )

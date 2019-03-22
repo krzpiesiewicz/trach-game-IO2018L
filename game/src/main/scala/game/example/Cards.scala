@@ -1,22 +1,33 @@
 package game.example
 
 import game.core._
-import game.core.Card.CardId
 
-final class AtomicButtonCard protected () extends DefaultCardWithPriority("AtomicButton", 1) with OffensiveCard with StartingCard
+final class AtomicButtonCard protected () extends TypedCard[AtomicButtonCard] with CardWithPriority {
+  val priority = 1
+}
 
-final class AttackCard protected () extends DefaultCardWithPriority("Attack", 4) with OffensiveCard with StartingCard
+final class AttackCard protected () extends TypedCard[AttackCard] with CardWithPriority {
+  val priority = 4
+}
 
-final class MassedAttackCard protected () extends DefaultCardWithPriority("MassedAttack", 4) with OffensiveCard with StartingCard
+final class MassedAttackCard protected () extends TypedCard[MassedAttackCard] with CardWithPriority {
+  val priority = 4
+}
 
-final class ShelterCard protected () extends DefaultCardWithPriority("Shelter", 1) with DefensiveCard[AtomicButtonCard] with StartingCard
+final class ShelterCard protected () extends TypedCard[ShelterCard] with CardWithPriority {
+  val priority = 1
+}
 
-final class DefenceCard protected () extends DefaultCardWithPriority("Defence", 4) with DefensiveCard[AttackCard]
+final class DefenceCard protected () extends TypedCard[DefenceCard] with CardWithPriority {
+  val priority = 4
+}
 
-final class ReversalCard protected () extends DefaultCardWithPriority("Reversal", 4) with DefensiveCard[AttackCard]
+final class ReversalCard protected () extends TypedCard[ReversalCard] with CardWithPriority {
+  val priority = 4
+}
 
-final class PriorityIncrementerCard protected () extends DefaultCard("PriorityIncrementer") with ModificationCard
+final class PriorityIncrementerCard protected () extends TypedCard[PriorityIncrementerCard]
 
-final class TrenningCard protected () extends DefaultCard("Trenning") with AttributeCard with StartingCard
+final class TrenningCard protected () extends TypedCard[TrenningCard]
 
-final class CatCard protected () extends DefaultCard("Cat") with AttributeCard with StartingCard
+final class CatCard protected () extends TypedCard[CatCard]

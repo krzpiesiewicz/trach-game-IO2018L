@@ -11,7 +11,7 @@ object DefaultAttributes {
   class DefaultActiveCards(val cards: Seq[Card] = Seq.empty) extends PlayerActiveCards
 
   class DefaultTargetChooser extends TargetChooser {
-    def playersForTargets(circleOfPlayers: CircleOfPlayers) = circleOfPlayers.players
+    def playersForTargets(circleOfPlayers: CircleOfPlayers) = circleOfPlayers.playersMap
   }
   
   class DefaultCoveredCardsStack(val cards: Vector[Card]) extends CoveredCardsStack

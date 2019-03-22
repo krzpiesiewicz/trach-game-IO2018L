@@ -1,6 +1,7 @@
 package game.core
 
 import Player.PlayerId
+import game.core.Card.CardId
 
 trait Attribute
 
@@ -36,6 +37,10 @@ trait DiscardedCardsStack extends GlobalAttribute {
 
 trait GlobalActiveCards extends GlobalAttribute {
   def cards: Seq[Card] 
+}
+
+trait AllCards extends GlobalAttribute {
+  def cardsMap: Map[CardId, Card]
 }
 
 trait Players extends GlobalAttribute {

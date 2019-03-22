@@ -1,5 +1,6 @@
 package game.core
 
+import scala.language.implicitConversions
 import scala.reflect.ClassTag
 
 import com.google.inject.AbstractModule
@@ -14,14 +15,27 @@ trait Card {
   @Named("id")
   val id: CardId = 0
   
-  val code: CardCode
+  type T <: Card
+  val tag: ClassTag[T]
   
   def canEqual(a: Any) = a.isInstanceOf[Card]
 
   override def equals(a: Any) = a match {
-    case c: Card => c.canEqual(this) && code == c.code
+    case c: Card => c.canEqual(this) && tag == c.tag && id == c.id
     case _ => false 
   }
+}
+
+class TypedCard[C <: Card]()(implicit tg: ClassTag[C]) extends Card {
+  override type T = C
+  override val tag = tg
+  private def card: C = this.asInstanceOf[C]
+}
+
+object TypedCard {
+  implicit def apply(card: Card): TypedCard[card.T] = card
+  
+  implicit def toC[C <: Card](typedCard: TypedCard[C]): C = typedCard.card
 }
 
 trait CardFactory {
@@ -39,7 +53,6 @@ class DefaultCardFactory extends CardFactory {
 
 object Card {
   type CardId = Int
-  type CardCode = String
   
   class MyModule(val cardId: CardId) extends AbstractModule {
     override def configure(): Unit = {
@@ -64,18 +77,3 @@ object Card {
 trait CardWithPriority extends Card {
   val priority: Int
 }
-
-trait StartingCard extends Card
-
-trait AttributeCard extends Card
-
-trait ModificationCard extends Card
-
-trait OffensiveCard extends Card
-
-trait DefensiveCard[C <: OffensiveCard] extends Card
-
-abstract class DefaultCard(val code: CardCode) extends Card
-
-abstract class DefaultCardWithPriority(val code: CardCode, val priority: Int) extends Card
-

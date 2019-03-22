@@ -13,6 +13,8 @@ trait Player {
     case c: Player => c.canEqual(this) && id == c.id
     case _ => false 
   }
+  
+  lazy val hand = attributes.forceGet[Hand]
 }
 
 object Player {

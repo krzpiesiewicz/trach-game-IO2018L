@@ -10,6 +10,8 @@ import Card._
 import com.google.inject.name._
 import com.google.inject._
 
+import game.Logging.logger
+
 trait Card {
   @Inject
   @Named("id")
@@ -24,6 +26,8 @@ trait Card {
     case c: Card => c.canEqual(this) && tag == c.tag && id == c.id
     case _ => false 
   }
+  
+  override def toString = s"Card(id=$id, $tag)"
 }
 
 class TypedCard[C <: Card]()(implicit tg: ClassTag[C]) extends Card {
@@ -60,18 +64,22 @@ object Card {
     }
   }
   
-  def apply[C <: Card](id: CardId, args: Object*)(implicit tag: ClassTag[C]): C = {
+  def apply[C <: Card](id: CardId)(args: Any*)(implicit tag: ClassTag[C]): C = {
     val injector = Guice.createInjector(new MyModule(id));
     val constructor = tag.runtimeClass.getConstructors()(0)
-    val instance = constructor.newInstance(args: _*).asInstanceOf[C]
+    val instance = constructor.newInstance(args.map(_.asInstanceOf[AnyRef]): _*).asInstanceOf[C]
     injector.injectMembers(instance)
     instance
   }
   
-  def apply[C <: Card](args: Object*)(implicit tag: ClassTag[C], cardFactory: CardFactory): C = {
+  def apply[C <: Card](args: Any*)(implicit tag: ClassTag[C], cardFactory: CardFactory): C = {
     val id = cardFactory.createId
-    apply(id = id, args: _*)
+    apply(id = id)(args: _*)
   }
+  
+  def apply[C <: Card](tag: ClassTag[C])(args: Any*)(implicit cardFactory: CardFactory): C = apply(args: _*)(tag, cardFactory)
+  
+  def apply[C <: Card](tag: ClassTag[C], id: CardId)(args: Any*)(implicit cardFactory: CardFactory): C = apply(id = id)(args: _*)(tag)
 }
 
 trait CardWithPriority extends Card {

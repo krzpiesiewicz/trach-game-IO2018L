@@ -41,13 +41,13 @@ protected abstract class PlayedCardClass[C <: Card] (c: TypedCard[C], val player
 
 trait PlayedStartingCard[C <: Card] extends PlayedCard[C]
 
-final class PlayedCardAtPlayer[C <: Card](card: TypedCard[C], player: Player, targetPlayer: Player)
+final class PlayedCardAtPlayer[C <: Card](card: TypedCard[C], player: Player, val targetPlayer: Player)
 extends PlayedCardClass[C](card, player) with PlayedStartingCard[C]
 
-final class PlayedCardAtActiveCard[C <: Card](card: TypedCard[C], player: Player, activeCard: Card)
+final class PlayedCardAtActiveCard[C <: Card](card: TypedCard[C], player: Player, val activeCard: Card)
 extends PlayedCardClass[C](card, player) with PlayedStartingCard[C]
 
-final class PlayedCardInTree[C <: Card](card: TypedCard[C], player: Player, parentCard: Card)
+final class PlayedCardInTree[C <: Card](card: TypedCard[C], player: Player, val parentCard: Card)
 extends PlayedCardClass[C](card, player) with PlayedCard[C]
 
 object PlayedCard {

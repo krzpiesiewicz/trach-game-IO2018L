@@ -2,10 +2,7 @@ package game.core
 
 import Player.PlayerId
 
-trait Player {
-  val id: PlayerId
-  
-  def attributes: AttributesSet[PlayerAttribute]
+case class Player(id: PlayerId, attributes: AttributesSet[PlayerAttribute]) {
   
   def canEqual(a: Any) = a.isInstanceOf[Player]
 

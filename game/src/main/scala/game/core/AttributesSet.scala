@@ -11,7 +11,7 @@ trait AttributesSet[A <: Attribute] {
     case None => throw new Exception(s"AttributesSet does not contain attribute extending $tag.")
   }
 
-  def apply(builder: AttributeBuilder[A]): AttributesSet[A]
+  def transformed(transformer: AttributeTransformer[A]): AttributesSet[A]
 }
 
 object AttributesSet {
@@ -22,5 +22,5 @@ class DefaultAttributesSet[A <: Attribute](attributes: Seq[A]) extends Attribute
 
   def get[T <: A]()(implicit tag: ClassTag[T]) = attributes collectFirst {case t: T => t}
 
-  def apply(builder: AttributeBuilder[A]) = new DefaultAttributesSet(attributes map { a => builder(a) })
+  def transformed(transformer: AttributeTransformer[A]) = new DefaultAttributesSet(attributes map { a => transformer.transform(a) })
 }

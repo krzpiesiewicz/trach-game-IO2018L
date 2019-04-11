@@ -6,16 +6,17 @@ import game.Logging.logger
 import game.core._
 import game.core.actions._
 
-import game.example._
-import game.example.actions.attacks._
-import game.example.DefaultAttributes.DefaultHand
-import game.example.DefaultAttributes.DefaultPlayers
-import game.example.actions.PriorityIncrementer
+import game.standardtrach._
+import game.standardtrach.actions.attacks._
+import game.standardtrach.DefaultAttributes.DefaultHand
+import game.standardtrach.DefaultAttributes.DefaultPlayers
+import game.standardtrach.actions.PriorityIncrementer
+import game.standardtrach.actions.actionFactory
 
 
 class ActionTest extends FunSuite {
   
-  test("Action test") {
+  object attackInit {
     implicit val cardFactory = new DefaultCardFactory
     
     val ac = Card[AttackCard]()
@@ -28,6 +29,10 @@ class ActionTest extends FunSuite {
     val circle = new CircleOfPlayers(Array(p1, p2))
     
     implicit val state = new NormalState(new DefaultAttributesSet(Seq(new DefaultPlayers(circle))))
+  }
+  
+  test("Attack test") {
+    import attackInit._
     
     val attack: Action = new Attack(new PlayedCardAtPlayer(ac, p1, p2))
     
@@ -59,5 +64,22 @@ class ActionTest extends FunSuite {
     val defOpt3 = strongerDefence.transform(strongerAttack)
     assert(defOpt3.isDefined)
     logger.info(s"strongerDefence.transform(strongerAttack) result: $defOpt3")
+  }
+  
+  test("ActionFactory test") {
+    import attackInit._
+    
+    val attackOpt = actionFactory.createAction(new PlayedCardAtPlayer(ac, p1, p2))
+    val defenceOpt = actionFactory.createTransformer(new PlayedCardInTree(dc, p2, ac))
+    
+    assert(attackOpt.isDefined)
+    assert(defenceOpt.isDefined)
+    
+    val attack = attackOpt.get
+    val defence = defenceOpt.get
+    
+    // ordinary attack and defence
+    val defOpt1 = defence.transform(attack)
+    assert(defOpt1.isDefined)
   }
 }

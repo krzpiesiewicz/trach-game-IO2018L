@@ -1,9 +1,9 @@
-package game.example.actions
+package game.standardtrach.actions
 
 import game.core.actions._
 import game.core.PlayedCardInTree
 import game.core.GameState
-import game.example.PriorityIncrementerCard
+import game.standardtrach.PriorityIncrementerCard
 
 trait ActionWithPriority extends Action {
   def priority: Int

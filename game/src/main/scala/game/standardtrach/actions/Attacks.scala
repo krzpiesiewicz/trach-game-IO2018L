@@ -1,12 +1,12 @@
-package game.example.actions
+package game.standardtrach.actions
 
 import game.Logging.logger
 
 import game.core._
 import game.core.actions._
-import game.example.AttackCard
-import game.example.DefenceCard
-import game.example.MassedAttackCard
+import game.standardtrach.AttackCard
+import game.standardtrach.DefenceCard
+import game.standardtrach.MassedAttackCard
 
 package object attacks {
 
@@ -73,7 +73,7 @@ package object attacks {
       played: PlayedStartingCard[MassedAttackCard],
       priorityOpt: Option[Int] = None,
       unitsOpt: Option[Seq[AttackUnit]] = None)(implicit initialState: GameState)
-    extends CardAction[AttackCard, PlayedCardAtPlayer[AttackCard]] with MassedAttackAction {
+    extends CardAction[MassedAttackCard, PlayedCardAtPlayer[MassedAttackCard]] with MassedAttackAction {
 
     //TODO
     def state = initialState

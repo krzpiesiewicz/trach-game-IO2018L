@@ -1,6 +1,7 @@
 package game.core
 
 import game.Logging.logger
+import scala.reflect.ClassTag
 
 package object actions {
 
@@ -64,9 +65,9 @@ package object actions {
    * Factory for creating actions and transformers based on played cards.
    */
   trait ActionFactory {
-    def createAction[C <: Card, P <: PlayedStartingCard[C]](psc: P): CardAction[C, P]
+    def createAction[C <: Card](pc: PlayedStartingCard[C])(implicit state: GameState): Option[CardAction[pc.T, _ <: PlayedStartingCard[pc.T]]]
 
-    def createTransformer[C <: Card, P <: PlayedCardInTree[C]](psc: P): ActionCardTransformer[C, P]
+    def createTransformer[C <: Card](pc: PlayedCardInTree[C])(implicit state: GameState): Option[ActionCardTransformer[pc.T, _ <: PlayedCardInTree[pc.T]]]
   }
 }
 

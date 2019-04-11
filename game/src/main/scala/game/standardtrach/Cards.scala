@@ -1,4 +1,4 @@
-package game.example
+package game.standardtrach
 
 import game.core._
 import scala.reflect.ClassTag

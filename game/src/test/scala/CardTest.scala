@@ -8,7 +8,7 @@ import game.Logging.logger
 import game.core._
 import game.core.Card.CardId
 
-import game.example._
+import game.standardtrach._
 
 final class ExampleCardWithArgs protected (val arg1: Int, val arg2: String) extends TypedCard[ExampleCardWithArgs] {
   override def toString = s"Card(id=$id, $tag, arg1=$arg1, arg2=$arg2)"

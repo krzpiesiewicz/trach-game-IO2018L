@@ -1,22 +1,45 @@
 package game.core
 
 import scala.language.existentials
+import game.core.actions._
 
 trait TreeOfCards
 
-case object EmptyTree extends TreeOfCards
-
-case class TreeWithCards(val rootPlayingCard: PlayedStartingCard[_ <: Card], val children: Seq[CardNode] = Seq.empty) extends TreeOfCards {
-  /**
-   * TODO implementation of simple attaching a new leaf (without any checks. It means transforming only the tree structure).
-   * At the moment the method does nothing.
-   */
-  def attachPlayedCard(pcit: PlayedCardInTree[_ <: Card]) = this
+trait CardNode {
+  type N <: CardNode
+  
+  val children: Seq[CardInnerNode]
+  val playedCard: PlayedCard[_ <: Card]
+  
+  def withChildren(newChildren: Seq[CardInnerNode]): N
 }
 
-class CardNode(val playingCard: PlayedCardInTree[_ <: Card], val children: Seq[CardNode])
+case object EmptyTree extends TreeOfCards
 
-case class Table(val state: GameState, val tree: TreeOfCards) {
+case class TreeWithCards(val playedCard: PlayedStartingCard[_ <: Card], val action: Action, val children: Seq[CardInnerNode] = Seq.empty) extends TreeOfCards with CardNode {
+  type N = TreeWithCards
+  def withChildren(newChildren: Seq[CardInnerNode]) = TreeWithCards(playedCard, action, newChildren)
+  
+  def attachPlayedCard(pcit: PlayedCardInTree[_ <: Card], transformer: ActionTransformer): TreeWithCards = {
+    
+    def mapTree[CN <: CardNode](node: CN): node.N = {
+      if (node.playedCard.card == pcit.parentCard)
+        node.withChildren(children :+ new CardInnerNode(pcit, transformer))
+      else
+        node.withChildren(node.children map {case child => mapTree(child)})
+    }
+    
+    mapTree(this)
+  }
+}
+
+case class CardInnerNode(val playedCard: PlayedCardInTree[_ <: Card], val transformer: ActionTransformer, val children: Seq[CardInnerNode] = Seq.empty) extends CardNode {
+  type N = CardInnerNode
+  
+  def withChildren(newChildren: Seq[CardInnerNode]) = CardInnerNode(playedCard, transformer, newChildren)
+}
+
+case class Table(val state: GameState, val tree: TreeOfCards)(implicit actionFactory: ActionFactory) {
 
   def attachCard(pcr: PlayedCardRequest): (Table, Boolean) = {
     val notAttached = (this, false)
@@ -26,17 +49,25 @@ case class Table(val state: GameState, val tree: TreeOfCards) {
         tree match {
           case EmptyTree => pc match {
             case psc: PlayedStartingCard[_] => {
-              val newState = removeCardFromPlayersHand(pc.player, pc.card, state)
-              (Table(newState, TreeWithCards(psc)), true)
+              actionFactory.createAction(psc)(state) match {
+                case Some(action) => {
+                  val newState = removeCardFromPlayersHand(psc.player, psc.card, state)
+                  (Table(newState, TreeWithCards(psc, action)), true)
+                }
+                case None => notAttached
+              }
             }
             case _ => notAttached
           }
           case treeWithCards: TreeWithCards => pc match {
             case pcit: PlayedCardInTree[_] => {
-              //TODO implementation of checking if card can be attached in certaing place
-              // Tip: use ActionBuilders and Refiners
-              val newState = removeCardFromPlayersHand(pc.player, pc.card, state)
-              (Table(newState, treeWithCards.attachPlayedCard(pcit)), true)
+              actionFactory.createTransformer(pcit)(state) match {
+                case Some(transformer) => {
+                  val newState = removeCardFromPlayersHand(pc.player, pc.card, state)
+                  (Table(newState, treeWithCards.attachPlayedCard(pcit, transformer)), true)
+                }
+                case None => notAttached
+              }
             }
             case _ => notAttached
           }
@@ -47,9 +78,14 @@ case class Table(val state: GameState, val tree: TreeOfCards) {
       case e: Exception => notAttached
     }
   }
+  
+  /**
+   * TODO
+   */
+  def evaluate: GameState = state
 
   private def isPlayersCard(player: Player, card: Card): Boolean = player.hand.cards contains card
-  
+
   /**
    * TODO implementation of state transformation by removing player's card.
    * It should remove the card from player's hand and give the player a new one (next one from the CoveredCardsStack).

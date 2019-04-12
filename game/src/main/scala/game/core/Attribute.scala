@@ -25,9 +25,9 @@ trait Hand extends PlayerAttribute {
   def cards: Seq[Card]
   
   /**
-   * Returns the hand where @oldCard is replaced by @newCard.
+   * Returns the hand where @oldCard is replaced by @newCard when @newCardOpt is Some(@newCard) otherwise it returns the hand without @oldCard.
    */
-  def replacedCard(oldCard: Card, newCard: Card): Hand
+  def replacedCard(oldCard: Card, newCardOpt: Option[Card]): Hand
 }
 
 trait PlayerActiveCards extends PlayerAttribute {
@@ -43,9 +43,9 @@ trait CoveredCardsStack extends GlobalAttribute {
   
   /**
    * Pops a covered card from the stack.
-   * Returns the popped card and the stack without the card.
+   * If stack is not empty it returns Some(poppedCard, restOfStack) otherwise it returns None.
    */
-  def pop: (Card, CoveredCardsStack)
+  def pop: Option[(Card, CoveredCardsStack)]
 }
 
 trait DiscardedCardsStack extends GlobalAttribute {
@@ -68,6 +68,8 @@ trait AllCards extends GlobalAttribute {
 
 trait Players extends GlobalAttribute {
   def circleOfPlayers: CircleOfPlayers
+  
+  def updatePlayer(player: Player): Players
 }
 
 trait RoundsManager extends GlobalAttribute {
@@ -75,6 +77,6 @@ trait RoundsManager extends GlobalAttribute {
   def nextPlayer(circleOfPlayers: CircleOfPlayers): Player
 }
 
-trait AttributeTransformer[A <: Attribute] {
-  def transform(attribute: A): A
+object Attribute {
+  type AttributeTransformer[A <: Attribute] = PartialFunction[A, A]
 }

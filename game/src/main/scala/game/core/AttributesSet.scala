@@ -1,6 +1,7 @@
 package game.core
 
 import scala.reflect.ClassTag
+import game.core.Attribute.AttributeTransformer
 
 trait AttributesSet[A <: Attribute] {
 
@@ -18,9 +19,9 @@ object AttributesSet {
   def apply[A <: Attribute](attributes: Seq[A]) = new DefaultAttributesSet(attributes)
 }
 
-class DefaultAttributesSet[A <: Attribute](attributes: Seq[A]) extends AttributesSet[A] {
+case class DefaultAttributesSet[A <: Attribute](attributes: Seq[A]) extends AttributesSet[A] {
 
-  def get[T <: A]()(implicit tag: ClassTag[T]) = attributes collectFirst {case t: T => t}
+  def get[T <: A]()(implicit tag: ClassTag[T]) = attributes collectFirst { case t: T => t }
 
-  def transformed(transformer: AttributeTransformer[A]) = new DefaultAttributesSet(attributes map { a => transformer.transform(a) })
+  def transformed(transformer: AttributeTransformer[A]) = new DefaultAttributesSet(attributes map { transformer.applyOrElse(_, {a: A => a}) })
 }

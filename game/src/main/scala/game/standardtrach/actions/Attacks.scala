@@ -18,7 +18,7 @@ package object attacks {
    * @priority describes this small attack unit priority
    */
   class AttackUnit(val target: Player, val from: Player, val damage: Int, val priority: Int) {
-    
+
     def withNewPiority(newPriority: Int): AttackUnit = new AttackUnit(target, from, damage, newPriority)
   }
 
@@ -44,18 +44,21 @@ package object attacks {
   }
 
   class Attack(
-      played: PlayedCardAtPlayer[AttackCard],
-      priorityOpt: Option[Int] = None,
-      unitOpt: Option[AttackUnit] = None)(implicit initialState: GameState)
+    played: PlayedCardAtPlayer[AttackCard],
+    priorityOpt: Option[Int] = None,
+    unitOpt: Option[AttackUnit] = None)(implicit initialState: GameState)
     extends CardAction[AttackCard, PlayedCardAtPlayer[AttackCard]] with AttackAction {
     {
       if (played.targetPlayer == played.player)
         throw new Exception("Player cannot target himself/herself")
     }
 
-    //TODO
-    def state = initialState
-    
+    def state = initialState transformed {
+      case players: Players => players.updatePlayer(unit.target.transformed {
+        case health: Health => health.getDamage(unit.damage)
+      })
+    }
+
     val priority = priorityOpt match {
       case Some(priority) => priority
       case None => played.card.priority
@@ -65,19 +68,24 @@ package object attacks {
       case Some(unit) => unit
       case None => new AttackUnit(played.targetPlayer, played.player, 1, priority)
     }
-    
+
     def withPriority(newPriority: Int) = new Attack(played, Some(newPriority), Some(unit.withNewPiority(newPriority)))
   }
 
   class MassedAttack(
-      played: PlayedStartingCard[MassedAttackCard],
-      priorityOpt: Option[Int] = None,
-      unitsOpt: Option[Seq[AttackUnit]] = None)(implicit initialState: GameState)
+    played: PlayedStartingCard[MassedAttackCard],
+    priorityOpt: Option[Int] = None,
+    unitsOpt: Option[Seq[AttackUnit]] = None)(implicit initialState: GameState)
     extends CardAction[MassedAttackCard, PlayedCardAtPlayer[MassedAttackCard]] with MassedAttackAction {
 
-    //TODO
-    def state = initialState
-    
+    def state = initialState transformed {
+      case players: Players => units.foldLeft(players) { (players: Players, unit: AttackUnit) =>
+        players.updatePlayer(unit.target.transformed {
+          case health: Health => health.getDamage(unit.damage)
+        })
+      }
+    }
+
     val priority = priorityOpt match {
       case Some(priority) => priority
       case None => played.card.priority
@@ -96,21 +104,21 @@ package object attacks {
       played,
       Some(priority),
       Some(replaceTransformedAttackUnit(units, unitToTranform, transformation)))
-    
+
     // for now changing priority results in changing priorities of all unit attacks
-    def withPriority(newPriority: Int) = new MassedAttack(played, Some(newPriority), Some(units map {_.withNewPiority(newPriority)}))
+    def withPriority(newPriority: Int) = new MassedAttack(played, Some(newPriority), Some(units map { _.withNewPiority(newPriority) }))
   }
 
   class Defence(
-      played: PlayedCardInTree[DefenceCard],
-      priorityOpt: Option[Int] = None)(implicit initialState: GameState)
+    played: PlayedCardInTree[DefenceCard],
+    priorityOpt: Option[Int] = None)(implicit initialState: GameState)
     extends ActionCardTransformer[DefenceCard, PlayedCardInTree[DefenceCard]] with ActionTransformerWithPriority {
 
     val priority = priorityOpt match {
       case Some(priority) => priority
       case None => played.card.priority
     }
-    
+
     def transform(action: Action) = action match {
       case attack: AttackAction => {
         if (attack.unit.priority < priority)
@@ -119,7 +127,6 @@ package object attacks {
           Some(new NoneAction(initialState) with CardAction[AttackCard, PlayedCardAtPlayer[AttackCard]])
       }
       case massedAttack: MassedAttackAction => {
-        //TODO allowing the player to choose who is defended (maybe by server query to client)
         // At the moment player can defend only himself/herself.
 
         findAttackUnitTargetedAtPlayer(massedAttack.units, played.player) match {
@@ -134,12 +141,12 @@ package object attacks {
       }
       case _ => None
     }
-    
+
     /**
      * Returns None because Defence cannot modify another transformer.
      */
     def transform(transformer: ActionTransformer) = None
-    
+
     def withPriority(newPriority: Int) = new Defence(played, Some(newPriority))
   }
 

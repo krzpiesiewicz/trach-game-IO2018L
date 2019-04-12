@@ -2,7 +2,7 @@ package game.core
 
 import Player.PlayerId
 
-class CircleOfPlayers(val playersOrder: Array[Player]) {
+case class CircleOfPlayers(val playersOrder: Array[Player]) {
 
   lazy val playersMap: Map[PlayerId, Player] = playersOrder.foldLeft[Map[PlayerId, Player]](Map.empty) {
     case (map, player) => map + (player.id -> player)
@@ -12,6 +12,8 @@ class CircleOfPlayers(val playersOrder: Array[Player]) {
 
   def nextTo(player: Player): Player = playersOrder(index(index(player), 1))
   def prevTo(player: Player): Player = playersOrder(index(index(player), -1))
+  
+  def updatePlayer(player: Player) = new CircleOfPlayers(playersOrder map {p => if(p == player) player else p})
 
   private def index(idx: Int, change: Int) = (idx + change) % playersOrder.length
   

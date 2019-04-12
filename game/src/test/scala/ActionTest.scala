@@ -8,23 +8,21 @@ import game.core.actions._
 
 import game.standardtrach._
 import game.standardtrach.actions.attacks._
-import game.standardtrach.DefaultAttributes.DefaultHand
-import game.standardtrach.DefaultAttributes.DefaultPlayers
 import game.standardtrach.actions.PriorityIncrementer
-import game.standardtrach.actions.actionFactory
-
+import game.standardtrach.actions.buildersFactory
+import game.standardtrach.DefaultAttributes._
 
 class ActionTest extends FunSuite {
   
-  object attackInit {
+  object data {
     implicit val cardFactory = new DefaultCardFactory
     
     val ac = Card[AttackCard]()
     val dc = Card[DefenceCard]()
     val pic = Card[PriorityIncrementerCard]()
     
-    val p1 = Player(1, new DefaultAttributesSet(Seq(new DefaultHand(cards = Seq(ac)))))
-    val p2 = Player(2, new DefaultAttributesSet(Seq(new DefaultHand(cards = Seq(dc)))))
+    val p1 = Player(1, new DefaultAttributesSet(Seq(new DefaultHealth())))
+    val p2 = Player(2, new DefaultAttributesSet(Seq(new DefaultHealth())))
     
     val circle = new CircleOfPlayers(Array(p1, p2))
     
@@ -32,7 +30,7 @@ class ActionTest extends FunSuite {
   }
   
   test("Attack test") {
-    import attackInit._
+    import data._
     
     val attack: Action = new Attack(new PlayedCardAtPlayer(ac, p1, p2))
     
@@ -43,7 +41,6 @@ class ActionTest extends FunSuite {
     // ordinary attack and defence
     val defOpt1 = defence.transform(attack)
     assert(defOpt1.isDefined)
-    logger.info(s"defence.transform(attack) result: $defOpt1")
     
     // an attack with incremented priority and an ordinary defence
     val strongerAttack = {
@@ -51,9 +48,12 @@ class ActionTest extends FunSuite {
       assert(opt.isDefined)
       opt.get
     }
+    
+    // asserting if the attack has decreased HP
+    assert(strongerAttack.state.player(p2).health.value == p2.health.value - 1)
+    
     val defOpt2 = defence.transform(strongerAttack)
     assert(defOpt2.isEmpty)
-    logger.info(s"defence.transform(strongerAttack) result: $defOpt2")
     
     // an attack with incremented priority and a defence with incremented priority
     val strongerDefence = {
@@ -61,16 +61,21 @@ class ActionTest extends FunSuite {
       assert(opt.isDefined)
       opt.get
     }
-    val defOpt3 = strongerDefence.transform(strongerAttack)
-    assert(defOpt3.isDefined)
-    logger.info(s"strongerDefence.transform(strongerAttack) result: $defOpt3")
+    
+    val defendedAttack = {
+      val defOpt3 = strongerDefence.transform(strongerAttack)
+      assert(defOpt3.isDefined)
+      defOpt3.get
+    }
+    // asserting if the attack has not decreased HP
+    assert(defendedAttack.state.player(p2).health.value == p2.health.value)
   }
   
-  test("ActionFactory test") {
-    import attackInit._
+  test("BuildersFactory test") {
+    import data._
     
-    val attackOpt = actionFactory.createAction(new PlayedCardAtPlayer(ac, p1, p2))
-    val defenceOpt = actionFactory.createTransformer(new PlayedCardInTree(dc, p2, ac))
+    val attackOpt = buildersFactory.createActionBuilder(new PlayedCardAtPlayer(ac, p1, p2))(state)
+    val defenceOpt = buildersFactory.createTransformerBuilder(new PlayedCardInTree(dc, p2, ac))(state)
     
     assert(attackOpt.isDefined)
     assert(defenceOpt.isDefined)

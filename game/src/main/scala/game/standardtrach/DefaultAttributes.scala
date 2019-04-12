@@ -14,41 +14,56 @@ import game.core.PlayerActiveCards
 import game.core.Players
 import game.core.RoundsManager
 import game.core.TargetChooser
+import game.core.Card.CardId
 
 object DefaultAttributes {
 
-  class DefaultHealth(val value: Int = 5, val maxValue: Int = 5) extends Health {
-    
+  case class DefaultHealth(val value: Int = 5, val maxValue: Int = 5) extends Health {
+
     def getDamage(damageValue: Int) = new DefaultHealth(value - damageValue, maxValue)
   }
 
-  class DefaultHand(val maxCards: Int = 5, val cards: Seq[Card]) extends Hand {
-    
-    def replacedCard(oldCard: Card, newCard: Card) = new DefaultHand(maxCards, cards.map {card => if (card == oldCard) newCard else card})
+  case class DefaultHand(val maxCards: Int = 5, val cards: Seq[Card]) extends Hand {
+
+    def replacedCard(oldCard: Card, newCardOpt: Option[Card]) = new DefaultHand(
+      maxCards,
+      newCardOpt match {
+        case Some(newCard) => cards.map { card => if (card == oldCard) newCard else card }
+        case None => cards.filterNot(_ == oldCard)
+      })
   }
 
-  class DefaultActiveCards(val cards: Seq[Card] = Seq.empty) extends PlayerActiveCards
+  case class DefaultActiveCards(val cards: Seq[Card] = Seq.empty) extends PlayerActiveCards
 
-  class DefaultTargetChooser extends TargetChooser {
-    
+  case class DefaultTargetChooser() extends TargetChooser {
+
     def playersForTargets(circleOfPlayers: CircleOfPlayers) = circleOfPlayers.playersMap
   }
-  
-  class DefaultCoveredCardsStack(val cards: Vector[Card]) extends CoveredCardsStack {
-    
-    def pop = (cards.head, new DefaultCoveredCardsStack(cards.drop(1)))
+
+  case class DefaultCoveredCardsStack(val cards: Vector[Card]) extends CoveredCardsStack {
+
+    def pop = if (cards.isEmpty) None else Some(cards.head, new DefaultCoveredCardsStack(cards.drop(1)))
   }
-  
-  class DefaultDiscardedCardsStack(val cards: Vector[Card]) extends DiscardedCardsStack {
-    
+
+  case class DefaultDiscardedCardsStack(val cards: Vector[Card]) extends DiscardedCardsStack {
+
     def push(card: Card) = new DefaultDiscardedCardsStack(cards.+:(card))
   }
+
+  case class DefaultGlobalActiveCards(val cards: Vector[Card]) extends GlobalActiveCards
+
+  case class DefaultAllCards(cardsMap: Map[CardId, Card]) extends AllCards
   
-  class DefaultGlobalActiveCards(val cards: Vector[Card]) extends GlobalActiveCards
+  object DefaultAllCards {
+    def apply(cards: Seq[Card]) = new DefaultAllCards(cards.map(c => (c.id, c)).toMap)
+  }
+  
+  case class DefaultPlayers(val circleOfPlayers: CircleOfPlayers) extends Players {
 
-  class DefaultPlayers(val circleOfPlayers: CircleOfPlayers) extends Players
+    def updatePlayer(player: Player) = new DefaultPlayers(circleOfPlayers.updatePlayer(player))
+  }
 
-  class DefaultRoundsManager(val currentPlayer: Player) extends RoundsManager {
+  case class DefaultRoundsManager(val currentPlayer: Player) extends RoundsManager {
     def nextPlayer(circleOfPlayers: CircleOfPlayers) = circleOfPlayers.nextTo(currentPlayer)
   }
 }

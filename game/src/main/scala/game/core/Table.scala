@@ -7,10 +7,10 @@ trait TreeOfCards
 
 trait CardNode {
   type N <: CardNode
-  
+
   val children: Seq[CardInnerNode]
   val playedCard: PlayedCard[_ <: Card]
-  
+
   def withChildren(newChildren: Seq[CardInnerNode]): N
 }
 
@@ -19,23 +19,23 @@ case object EmptyTree extends TreeOfCards
 case class TreeWithCards(val playedCard: PlayedStartingCard[_ <: Card], val action: Action, val children: Seq[CardInnerNode] = Seq.empty) extends TreeOfCards with CardNode {
   type N = TreeWithCards
   def withChildren(newChildren: Seq[CardInnerNode]) = TreeWithCards(playedCard, action, newChildren)
-  
+
   def attachPlayedCard(pcit: PlayedCardInTree[_ <: Card], transformer: ActionTransformer): TreeWithCards = {
-    
+
     def mapTree[CN <: CardNode](node: CN): node.N = {
       if (node.playedCard.card == pcit.parentCard)
         node.withChildren(children :+ new CardInnerNode(pcit, transformer))
       else
-        node.withChildren(node.children map {case child => mapTree(child)})
+        node.withChildren(node.children map { case child => mapTree(child) })
     }
-    
+
     mapTree(this)
   }
 }
 
 case class CardInnerNode(val playedCard: PlayedCardInTree[_ <: Card], val transformer: ActionTransformer, val children: Seq[CardInnerNode] = Seq.empty) extends CardNode {
   type N = CardInnerNode
-  
+
   def withChildren(newChildren: Seq[CardInnerNode]) = CardInnerNode(playedCard, transformer, newChildren)
 }
 
@@ -78,11 +78,32 @@ case class Table(val state: GameState, val tree: TreeOfCards)(implicit actionFac
       case e: Exception => notAttached
     }
   }
-  
+
   /**
    * TODO
    */
-  def evaluate: GameState = state
+  def evaluate: GameState = {
+
+    def evalTree(node: CardInnerNode): ActionTransformer = {
+      node.children.map(evalTree _).foldLeft(node.transformer)((parentTransformer: ActionTransformer, childTransformer: ActionTransformer) =>
+        childTransformer.transform(parentTransformer) match {
+          case Some(transformer) => transformer
+          case None => parentTransformer
+        })
+    }
+
+    tree match {
+      case EmptyTree => state
+      case tree: TreeWithCards => {
+        val action = tree.children.map(evalTree _).foldLeft(tree.action)((action: Action, transformer: ActionTransformer) =>
+          transformer.transform(action) match {
+            case Some(action) => action
+            case None => action
+          })
+          action.state
+      }
+    }
+  }
 
   private def isPlayersCard(player: Player, card: Card): Boolean = player.hand.cards contains card
 

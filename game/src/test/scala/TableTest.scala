@@ -12,39 +12,12 @@ import game.standardtrach.actions._
 import game.standardtrach.actions.attacks._
 import game.standardtrach.actions.PriorityIncrementer
 import game.standardtrach.DefaultAttributes._
+import game.gameplay._
 
 class TableTest extends FunSuite {
   
-  object data {
-    implicit val cardFactory = new DefaultCardFactory
-    
-    val ac = Card[AttackCard]()
-    val ac2 = Card[AttackCard]()
-    val dc = Card[DefenceCard]()
-    val pic = Card[PriorityIncrementerCard]()
-    val pic2 = Card[PriorityIncrementerCard]()
-    
-    val cards = Seq(ac, pic, dc, ac2, pic2)
-    
-    val p1 = Player(1, DefaultAttributesSet(Seq(
-        new DefaultHand(cards = Seq(ac, pic)),
-        new DefaultHealth())))
-    val p2 = Player(2, DefaultAttributesSet(Seq(
-        new DefaultHand(cards = Seq(dc, ac2, pic2)),
-        new DefaultHealth())))
-    
-    val circle = CircleOfPlayers(Array(p1, p2))
-    
-    val state = NormalState(new DefaultAttributesSet(Seq(
-        DefaultPlayers(circle),
-        DefaultAllCards(cards),
-        DefaultCoveredCardsStack(Vector.empty))))
-    
-    val table = Table(state)
-  }
-  
   test("Table test - attack") {
-    import data._
+    import DafaultData.data1._
     
     // assert that player cannot play a card which he does not own
     val (table1, attached1) = table.attachCard(PlayedCardAtPlayerRequest(ac.id, p2.id, p1.id))

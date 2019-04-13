@@ -11,6 +11,12 @@ trait GameState {
   
   lazy val cardsMap = attributes.forceGet[AllCards].cardsMap
   
+  lazy val coveredCardsStack = attributes.forceGet[CoveredCardsStack]
+  
+  lazy val discardedCardsStack = attributes.forceGet[DiscardedCardsStack]
+  
+  lazy val globalActiveCards = attributes.forceGet[GlobalActiveCards]
+  
   /**
    * Throws an exception if there is no card of id = cardId.
    */

@@ -8,7 +8,10 @@ lazy val game = (project in file("game"))
     libraryDependencies ++= Seq(
       "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
       "ch.qos.logback" % "logback-classic" % "1.2.3",
-      "com.google.inject" % "guice" % "4.2.2"
+      "com.google.inject" % "guice" % "4.2.2",
+      "com.typesafe.akka" %% "akka-actor" % akkaVersion,
+      "com.typesafe.akka" %% "akka-testkit" % akkaVersion,
+      "com.typesafe.play" %% "play-json" % "2.7.0-RC2",
     )
   )
   
@@ -18,3 +21,5 @@ lazy val commonSettings = Seq(
   libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test",
   scalacOptions ++= Seq("-feature")
 )
+
+lazy val akkaVersion = "2.5.22"

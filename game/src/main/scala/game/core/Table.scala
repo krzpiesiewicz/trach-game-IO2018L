@@ -1,7 +1,6 @@
 package game.core
 
 import scala.language.existentials
-
 import game.core.actions._
 
 trait TreeOfCards
@@ -54,7 +53,7 @@ case class Table(val state: GameState, val tree: TreeOfCards = EmptyTree)(implic
   def attachCard(pcr: PlayedCardRequest): (Table, Boolean) = {
     val notAttached: (Table, Boolean) = (this, false)
     try {
-      val pc = PlayedCard(pcr)(state)
+      val pc = PlayedCardRequest.toPlayedCard(pcr)(state)
       if (pc.player.owns(pc.card))
         tree match {
           case EmptyTree => pc match {

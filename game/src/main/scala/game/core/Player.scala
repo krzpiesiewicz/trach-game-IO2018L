@@ -16,6 +16,8 @@ class Player(val id: PlayerId, val attributes: AttributesSet[PlayerAttribute]) {
   
   lazy val health = attributes.forceGet[Health]
   
+  lazy val activeCards = attributes.forceGet[PlayerActiveCards]
+  
   /**
    * Returns a player with attributes transformed by given transformer.
    */

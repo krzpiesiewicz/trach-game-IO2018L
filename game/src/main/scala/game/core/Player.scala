@@ -18,6 +18,8 @@ class Player(val id: PlayerId, val attributes: AttributesSet[PlayerAttribute]) {
   
   lazy val activeCards = attributes.forceGet[PlayerActiveCards]
   
+  lazy val targetChooser = attributes.forceGet[TargetChooser]
+  
   /**
    * Returns a player with attributes transformed by given transformer.
    */

@@ -27,7 +27,11 @@ package object modelsapi {
 
   case class CardNodeApi(playedCard: PlayedCardInTreeApi, childrenNodes: Seq[CardNodeApi])
 
-  trait PlayedCardApi
+  trait PlayedCardApi {
+    val `type`: String
+    val cardId: Int
+    val whoPlayedId: Int
+  }
 
   trait PlayedStartingCardApi extends PlayedCardApi
 

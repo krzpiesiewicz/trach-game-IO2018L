@@ -17,6 +17,8 @@ trait GameState {
   
   lazy val globalActiveCards = attributes.forceGet[GlobalActiveCards]
   
+  lazy val roundsManager = attributes.forceGet[RoundsManager]
+  
   /**
    * Throws an exception if there is no card of id = cardId.
    */

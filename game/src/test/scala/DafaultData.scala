@@ -36,7 +36,8 @@ object DafaultData {
         DefaultAllCards(cards),
         DefaultCoveredCardsStack(Vector.empty),
         DefaultDiscardedCardsStack(Vector.empty),
-        DefaultGlobalActiveCards(Vector.empty)
+        DefaultGlobalActiveCards(Vector.empty),
+        DefaultRoundsManager(p1)
         )))
     
     val table = Table(state)

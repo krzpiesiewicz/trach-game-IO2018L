@@ -12,6 +12,7 @@ import game.gameplay.modelsapi.GameStateApi
 import game.gameplay.modelsapi.PlayedCardApi
 
 import game.gameplay.GamePlayActor._
+import game.core.Player.PlayerId
 
 class GamePlayActor(server: ActorRef)(implicit ec: ExecutionContext) extends Actor {
 
@@ -22,9 +23,9 @@ class GamePlayActor(server: ActorRef)(implicit ec: ExecutionContext) extends Act
       context.become(checkForStartingCardRequest(state))
   }
 
-  def checkForStartingCardRequest(state: GameState) = checkForCardRequest(Table(state), None)
+  def checkForStartingCardRequest(state: GameState) = checkForCardRequest(Table(state), Some(state.roundsManager.currentPlayer.id), None)
 
-  def checkForCardRequest(table: Table, timeoutOpt: Option[FiniteDuration]): Receive = {
+  def checkForCardRequest(table: Table, fromPlayerOpt: Option[PlayerId], timeoutOpt: Option[FiniteDuration]): Receive = {
     timeoutOpt match {
       case Some(timeout) => context.system.scheduler.scheduleOnce(timeout, self, TimeToEvaluate)
       case None => {}
@@ -34,14 +35,22 @@ class GamePlayActor(server: ActorRef)(implicit ec: ExecutionContext) extends Act
         val state = table.evaluate
         server ! GameStateApi(state)
         context.become(checkForStartingCardRequest(state))
-        
+
       case pca: PlayedCardApi =>
-        table.attachCard(pca) match {
-          case (table, _) =>
-            server ! GameStateApi(table)
-            context.become(checkForCardRequest(table, Some(30.seconds)))
+        val pcaOpt = fromPlayerOpt match {
+          case Some(playerId) => if (pca.whoPlayedId == playerId) Some(pca) else None
+          case None => Some(pca)
         }
-        
+        pcaOpt match {
+          case Some(pca) =>
+            table.attachCard(pca) match {
+              case (table, _) =>
+                server ! GameStateApi(table)
+                context.become(checkForCardRequest(table, None, Some(30.seconds)))
+            }
+          case None => {}
+        }
+
       case GameStateRequest =>
         sender() ! table.state
     }

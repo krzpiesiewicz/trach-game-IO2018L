@@ -1,5 +1,5 @@
 lazy val root = (project in file("."))
-  .aggregate(game)
+  .aggregate(game, server)
   .settings(commonSettings: _*)
   
 lazy val game = (project in file("game"))
@@ -11,9 +11,34 @@ lazy val game = (project in file("game"))
       "com.google.inject" % "guice" % "4.2.2",
       "com.typesafe.akka" %% "akka-actor" % akkaVersion,
       "com.typesafe.akka" %% "akka-testkit" % akkaVersion,
-      "com.typesafe.play" %% "play-json" % "2.7.0-RC2",
+      playJson,
     )
   )
+  
+lazy val server = (project in file("server"))
+  .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+        guice,
+        specs2 % Test,
+        macwireMacros,
+        macwireUtil,
+        macwireProxy,
+        playJson,
+    ),
+    routesGenerator := play.routes.compiler.InjectedRoutesGenerator,
+    PlayKeys.devSettings ++= Seq(
+      "play.server.http.port" -> "disabled",
+      "play.server.http.idleTimeout" -> "180s",
+      "play.client.http.idleTimeout" -> "180s",
+      "play.server.https.port" -> "9001",
+      "play.server.https.idleTimeout" -> "180s",
+      "play.client.https.idleTimeout" -> "180s",
+      "engineProvider" -> "play.core.server.ssl.DefaultSSLEngineProvider"
+    )
+  )
+  .enablePlugins(PlayScala)
+  .dependsOn(game)
   
 lazy val commonSettings = Seq(
   scalaVersion := "2.12.6",
@@ -22,4 +47,11 @@ lazy val commonSettings = Seq(
   scalacOptions ++= Seq("-feature")
 )
 
-lazy val akkaVersion = "2.5.22"
+lazy val akkaVersion = "2.5.19"
+
+lazy val playJson = "com.typesafe.play" %% "play-json" % "2.7.0-RC2"
+
+val macwireVersion = "2.3.1"
+val macwireMacros = "com.softwaremill.macwire" %% "macros" % macwireVersion % Provided
+val macwireUtil = "com.softwaremill.macwire" %% "util" % macwireVersion
+val macwireProxy = "com.softwaremill.macwire" %% "proxy" % macwireVersion

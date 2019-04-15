@@ -1,6 +1,8 @@
 package game.core
 
 import scala.language.existentials
+
+import game.Logging.logger
 import game.core.actions._
 
 trait TreeOfCards

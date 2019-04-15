@@ -138,20 +138,34 @@ package object modelsapi {
   implicit val playedStartingCardAtPlayerApiFormat = Json.format[PlayedStartingCardAtPlayerApi]
   implicit val playedStartingCardAtCardApiFormat = Json.format[PlayedStartingCardAtCardApi]
   implicit val playedCardInTreeApiFormat = Json.format[PlayedCardInTreeApi]
-  
-  implicit object playedStartingCardApiFormat extends Format[PlayedStartingCardApi] {
-    def writes(psc: PlayedStartingCardApi) = psc match {
-      case psc: PlayedStartingCardAtPlayerApi => playedStartingCardAtPlayerApiFormat.writes(psc)
-      case psc: PlayedStartingCardAtCardApi => playedStartingCardAtCardApiFormat.writes(psc)
+   
+  implicit object playedCardApiFormat extends Format[PlayedCardApi] {
+    def writes(psc: PlayedCardApi) = psc match {
+      case pca: PlayedStartingCardAtPlayerApi => playedStartingCardAtPlayerApiFormat.writes(pca)
+      case pca: PlayedStartingCardAtCardApi => playedStartingCardAtCardApiFormat.writes(pca)
+      case pca: PlayedCardInTreeApi => playedCardInTreeApiFormat.writes(pca)
     }
     
-    def reads(json: JsValue): JsResult[PlayedStartingCardApi] = (json \ "type").get match {
+    def reads(json: JsValue): JsResult[PlayedCardApi] = (json \ "type").get match {
       case JsString(typeName) => typeName match {
         case "PlayedStartingCardAtPlayer" => playedStartingCardAtPlayerApiFormat.reads(json)
         case "PlayedStartingCardAtCard" => playedStartingCardAtCardApiFormat.reads(json)
+        case "PlayedStartingCardInTree" => playedCardInTreeApiFormat.reads(json)
         case _ => JsError(s"""unknown type "$typeName"""")
       }
       case _ => JsError("""no "type" field""")
+    }
+  }
+  
+  implicit object playedStartingCardApiFormat extends Format[PlayedStartingCardApi] {
+    def writes(psc: PlayedStartingCardApi) = playedCardApiFormat.writes(psc)
+    
+    def reads(json: JsValue): JsResult[PlayedStartingCardApi] = playedCardApiFormat.reads(json) match {
+      case jsSuc: JsSuccess[PlayedCardApi] => jsSuc.value match {
+        case psc: PlayedStartingCardApi => JsSuccess(psc)
+        case _ => JsError("""it is not starting card""")
+      }
+      case jsErr: JsError => jsErr
     }
   }
   

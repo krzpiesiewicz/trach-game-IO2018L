@@ -34,3 +34,8 @@ class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec
     }
   }
 }
+
+object MultiplayerGameActor {
+  def props(gamesManager: ActorRef, gamePlayId: Long)(implicit ec: ExecutionContext) =
+    Props(new MultiplayerGameActor(gamesManager, gamePlayId))
+}

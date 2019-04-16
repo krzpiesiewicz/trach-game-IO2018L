@@ -57,7 +57,7 @@ class GamePlayActorTest extends FunSuite with BeforeAndAfterAll {
 
     // p2 cannot play his card because it is not his turn
     gamePlay.tell(
-      PlayedCardMsg(
+      PlayedCardRequestMsg(
         gamePlayId = gamePlayId,
         updateId = updateId0,
         played = PlayedStartingCardAtPlayerApi(
@@ -68,7 +68,7 @@ class GamePlayActorTest extends FunSuite with BeforeAndAfterAll {
 
     // p1 plays his ac at p2
     gamePlay.tell(
-      PlayedCardMsg(
+      PlayedCardRequestMsg(
         gamePlayId = gamePlayId,
         updateId = updateId0,
         played = PlayedStartingCardAtPlayerApi(
@@ -90,7 +90,7 @@ class GamePlayActorTest extends FunSuite with BeforeAndAfterAll {
     
     // p2 plays his dc to defend before p1's ac
     gamePlay.tell(
-      PlayedCardMsg(
+      PlayedCardRequestMsg(
         gamePlayId = gamePlayId,
         updateId = updateId1,
         played = PlayedCardInTreeApi(
@@ -112,7 +112,7 @@ class GamePlayActorTest extends FunSuite with BeforeAndAfterAll {
     
     // p1 do not want to do anything in updateId2
     gamePlay.tell(
-      NoActionMsg(
+      NoActionRequestMsg(
         gamePlayId = gamePlayId,
         updateId = updateId2,
         playerId = p1.id),
@@ -120,7 +120,7 @@ class GamePlayActorTest extends FunSuite with BeforeAndAfterAll {
       
     // p2 do not want to do anything
     gamePlay.tell(
-      NoActionMsg(
+      NoActionRequestMsg(
         gamePlayId = gamePlayId,
         updateId = updateId2,
         playerId = p2.id),

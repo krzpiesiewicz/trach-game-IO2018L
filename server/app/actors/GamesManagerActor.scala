@@ -7,6 +7,7 @@ import messagesapi._
 class GamesManagerActor extends Actor {
   
   var gamesMap: Map[Long, ActorRef] = Map.empty
+  var waitingUsers: Set[Long] = Set.empty
   
   override def preStart() {
     //TODO load saved games into gamesMap
@@ -20,8 +21,16 @@ class GamesManagerActor extends Actor {
   }
   
   def ready: Receive = {
-    case msg: QuickMultiplayerGameMsg => {
-      
+    
+    case AuthenticatedUserMsg(userId, msg) => msg match {
+      case msg: QuickMultiplayerGameRequestMsg =>
+        waitingUsers = waitingUsers + userId
+        //TODO check if a game play should start
+      case _ => {}
     }
   }
+}
+
+object GamesManagerActor {
+  def props = Props(new GamesManagerActor)
 }

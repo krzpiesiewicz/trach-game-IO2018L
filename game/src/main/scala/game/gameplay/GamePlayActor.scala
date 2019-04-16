@@ -62,7 +62,7 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
       case msg: GamePlayMsg => if (msg.gamePlayId == gamePlayId) msg match {
         case msg: GamePlayUpdateMsg => if (msg.updateId == updateId) msg match {
 
-          case pcm: PlayedCardMsg =>
+          case pcm: PlayedCardRequestMsg =>
             val pca = pcm.played
             val pcaOpt = fromPlayerOpt match {
               case Some(playerId) => if (pca.whoPlayedId == playerId) Some(pca) else None
@@ -79,7 +79,7 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
               case None => {}
             }
             
-          case nam: NoActionMsg =>
+          case nam: NoActionRequestMsg =>
             val newWaitingFor = waitingFor - nam.playerId
             if (newWaitingFor != waitingFor)
               if (newWaitingFor.isEmpty) {

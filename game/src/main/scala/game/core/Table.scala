@@ -5,50 +5,6 @@ import scala.language.existentials
 import game.Logging.logger
 import game.core.actions._
 
-trait TreeOfCards
-
-trait CardNode {
-  type N <: CardNode
-
-  val children: Seq[CardInnerNode]
-  val playedCard: PlayedCard[_ <: Card]
-
-  def withChildren(newChildren: Seq[CardInnerNode]): N
-}
-
-case object EmptyTree extends TreeOfCards
-
-case class TreeWithCards(
-  val playedCard: PlayedStartingCard[_ <: Card],
-  val actionBuilder: ActionBuilder,
-  val children: Seq[CardInnerNode] = Seq.empty) extends TreeOfCards with CardNode {
-
-  type N = TreeWithCards
-
-  def withChildren(newChildren: Seq[CardInnerNode]) = TreeWithCards(playedCard, actionBuilder, newChildren)
-
-  def attachPlayedCard(pcit: PlayedCardInTree[_ <: Card], transformerBuilder: ActionTransformerBuilder): TreeWithCards = {
-
-    def mapTree[CN <: CardNode](node: CN): node.N = {
-      if (node.playedCard.card == pcit.parentCard)
-        node.withChildren(children :+ new CardInnerNode(pcit, transformerBuilder))
-      else
-        node.withChildren(node.children map { case child => mapTree(child) })
-    }
-
-    mapTree(this)
-  }
-}
-
-case class CardInnerNode(
-  val playedCard: PlayedCardInTree[_ <: Card],
-  val transformerBuilder: ActionTransformerBuilder,
-  val children: Seq[CardInnerNode] = Seq.empty) extends CardNode {
-
-  type N = CardInnerNode
-
-  def withChildren(newChildren: Seq[CardInnerNode]) = CardInnerNode(playedCard, transformerBuilder, newChildren)
-}
 
 case class Table(val state: GameState, val tree: TreeOfCards = EmptyTree)(implicit buildersFactory: BuildersFactory) {
 
@@ -77,7 +33,7 @@ case class Table(val state: GameState, val tree: TreeOfCards = EmptyTree)(implic
               transformerBuilder(state) match {
                 case Some(transformer) => {
                   val newState = GameState.removeCardFromPlayersHand(pc.player, pc.card, state)
-                  (Table(newState, treeWithCards.attachPlayedCard(pcit, transformerBuilder)), true)
+                  (Table(newState, treeWithCards.attach(pcit, transformerBuilder)), true)
                 }
                 case None => notAttached
               }

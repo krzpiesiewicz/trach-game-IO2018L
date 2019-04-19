@@ -36,11 +36,11 @@ package messages {
     updateId: Long,
     gameState: GameState) extends GamePlayUpdateMsg
 
-  case class PlayedCardRequestMsg(
-    msgType: String = "PlayedCardRequest",
+  case class PlayedCardsRequestMsg(
+    msgType: String = "PlayedCardsRequest",
     gamePlayId: Long,
     updateId: Long,
-    played: PlayedCard) extends MsgFromClient with GamePlayUpdateMsg
+    played: CardTreeOrNode) extends MsgFromClient with GamePlayUpdateMsg
 
   case class NoActionRequestMsg(
     msgType: String = "NoActionRequest",
@@ -62,7 +62,7 @@ package object messages {
 
   implicit val gameStateRequestMsgFormat = Json.format[GameStateRequestMsg]
   implicit val gameStateUpdateMsgFormat = Json.format[GameStateUpdateMsg]
-  implicit val playedCardRequestMsgFormat = Json.format[PlayedCardRequestMsg]
+  implicit val playedCardRequestMsgFormat = Json.format[PlayedCardsRequestMsg]
   implicit val noActionRequestMsgFormat = Json.format[NoActionRequestMsg]
   implicit val gamePlayResultRequestMsgFormat = Json.format[GamePlayResultRequestMsg]
   implicit val gamePlayResultMsgFormat = Json.format[GamePlayResultMsg]

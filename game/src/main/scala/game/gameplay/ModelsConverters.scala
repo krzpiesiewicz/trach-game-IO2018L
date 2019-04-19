@@ -3,11 +3,15 @@ package game.gameplay
 import scala.language.implicitConversions
 
 import game.standardtrach.Cards
+import game.core.actions.BuildersFactory
 
 import jvmapi.models._
 
+
 package object modelsconverters {
 
+  // converters game objects to jvmapi models:
+  
   implicit def toCardModel(card: game.core.Card): Card = Card(card.id, Cards.nameOf(card))
 
   implicit def toPlayerModel(player: game.core.Player): Player = Player(
@@ -35,15 +39,9 @@ package object modelsconverters {
   implicit def toPlayedCardInTreeModel(pc: game.core.PlayedCardInTree[_]): PlayedCardInTree = PlayedCardInTree(
     card = pc.card.asInstanceOf[game.core.Card],
     whoPlayedId = pc.player.id,
-    targetCardId = pc.parentCard.id)
+    parentCardId = pc.parentCard.id)
 
   implicit def cardSeq(cards: Seq[game.core.Card]): Seq[Card] = cards.map(toCardModel(_))
-
-  implicit def toPlayedCardRequest(pc: PlayedCard): game.core.PlayedCardRequest = pc match {
-    case pc: PlayedStartingCardAtPlayer => game.core.PlayedCardAtPlayerRequest(pc.card.id, pc.whoPlayedId, pc.targetPlayerId)
-    case pc: PlayedStartingCardAtCard => game.core.PlayedCardAtActiveCardRequest(pc.card.id, pc.whoPlayedId, pc.targetCardId)
-    case pc: PlayedCardInTree => game.core.PlayedCardInTreeRequest(pc.card.id, pc.whoPlayedId, pc.targetCardId)
-  }
 
   implicit def toCardTreeModel(tree: game.core.TreeWithCards): CardTree = CardTree(
     tree.playedCard,
@@ -69,4 +67,46 @@ package object modelsconverters {
   implicit def toGameStateModel(state: game.core.GameState): GameState = toGameStateModel(state, None)
 
   implicit def toGameStateModel(table: game.core.Table): GameState = toGameStateModel(table.state, Some(table.tree))
+  
+  // convertes jvmapi models to game objects:
+  
+  /**
+   * It checks if a request is correct according to a game state. It means checking if all ids can be mapped for existing objects
+   * (throws an exception if something does not exist in game state).
+   * It does not check if the player owns the card, nor other similar constraints!
+   */
+  implicit def toPlayedCard(pc: PlayedCard)(implicit state: game.core.GameState): game.core.PlayedCard[_ <: game.core.Card] = pc match {
+    case pc: PlayedStartingCardAtPlayer => toPlayedStartingCardAtPlayer(pc)
+    case pc: PlayedStartingCardAtCard => toPlayedStartingCardAtCard(pc)
+    case pc: PlayedCardInTree => toPlayedCardInTree(pc)
+  }
+  
+  implicit def toPlayedStartingCard(pc: PlayedStartingCard)(implicit state: game.core.GameState): game.core.PlayedStartingCard[_ <: game.core.Card] =
+    toPlayedCard(pc).asInstanceOf[game.core.PlayedStartingCard[_ <: game.core.Card]]
+
+  implicit def toPlayedStartingCardAtPlayer(pc: PlayedStartingCardAtPlayer)(implicit state: game.core.GameState) = new game.core.PlayedCardAtPlayer(
+    state.card(pc.card.id),
+    state.player(pc.whoPlayedId),
+    state.player(pc.targetPlayerId))
+
+  implicit def toPlayedStartingCardAtCard(pc: PlayedStartingCardAtCard)(implicit state: game.core.GameState) = new game.core.PlayedCardAtActiveCard(
+    state.card(pc.card.id),
+    state.player(pc.whoPlayedId),
+    state.card(pc.targetCardId))
+
+  implicit def toPlayedCardInTree(pc: PlayedCardInTree)(implicit state: game.core.GameState) = new game.core.PlayedCardInTree(
+    state.card(pc.card.id),
+    state.player(pc.whoPlayedId),
+    state.card(pc.parentCardId))
+  
+  implicit def toTreeWithCards(tree: CardTree)(implicit state: game.core.GameState, buildersFactory: BuildersFactory): game.core.TreeWithCards =
+    tree.children.map(toCardInnerNode(_)).foldLeft(game.core.TreeWithCards(tree.playedCard)) { case (root, node) => root.attach(node)}
+    
+  implicit def toCardInnerNode(cardNode: CardNode)(implicit state: game.core.GameState, buildersFactory: BuildersFactory): game.core.CardInnerNode =
+    cardNode.children.map(toCardInnerNode(_)).foldLeft(game.core.CardInnerNode(cardNode.playedCard)) { case (root, node) => root.attach(node)}
+    
+  implicit def toCardNode(treeOrNode: CardTreeOrNode)(implicit state: game.core.GameState, buildersFactory: BuildersFactory): game.core.CardNode = treeOrNode match {
+    case tree: CardTree => toTreeWithCards(tree)
+    case node: CardNode => toCardInnerNode(node)
+  }
 }

@@ -20,17 +20,17 @@ import game.gameplay.modelsconverters._
 
 class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionContext) extends Actor with ActorLogging {
 
-  def sendGameStateUpdateMsg(target: ActorRef, updateId: Long, table: Table) =
+  private def sendGameStateUpdateMsg(target: ActorRef, updateId: Long, table: Table) =
     target ! GameStateUpdateMsg(gamePlayId = gamePlayId, updateId = updateId, gameState = table)
 
   def receive = checkForInitialGameState
 
-  def checkForInitialGameState: Receive = {
+  private def checkForInitialGameState: Receive = {
     case state: GameState =>
       context.become(checkForStartingCardRequest(state, 0))
   }
 
-  def checkForStartingCardRequest(state: GameState, updateId: Long) = checkForCardRequest(
+  private def checkForStartingCardRequest(state: GameState, updateId: Long) = checkForCardRequest(
       Table(state),
       updateId,
       true,
@@ -38,7 +38,7 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
       state.playersMap.keys.toSet,
       NoTimer)
 
-  def checkForCardRequest(
+  private def checkForCardRequest(
       table: Table,
       updateId: Long,
       updateToSend: Boolean,
@@ -62,7 +62,7 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
       case msg: GamePlayMsg => if (msg.gamePlayId == gamePlayId) msg match {
         case msg: GamePlayUpdateMsg => if (msg.updateId == updateId) msg match {
 
-          case pcm: PlayedCardRequestMsg =>
+          case pcm: PlayedCardsRequestMsg =>
             val pca = pcm.played
             val pcaOpt = fromPlayerOpt match {
               case Some(playerId) => if (pca.whoPlayedId == playerId) Some(pca) else None
@@ -94,6 +94,8 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
       }
     }
   }
+  
+  private def checkPlayedCardsRequest(pcm: PlayedCardsRequestMsg): Boolean
 }
 
 object GamePlayActor {

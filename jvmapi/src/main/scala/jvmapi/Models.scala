@@ -17,10 +17,24 @@ package models {
     usedCardsStack: Seq[Card],
     tableActiveCards: Seq[Card],
     cardTree: Option[CardTree])
+    
+  trait CardTreeOrNode {
+    val playedCard: PlayedCard
+    val childrenNodes: Seq[CardNode]
+  }
+  
+  object CardTreeOrNode {
+    def apply(playedCard: PlayedCard, childrenNodes: Seq[CardNode]): CardTreeOrNode = playedCard match {
+      case psc: PlayedStartingCard => CardTree(psc, childrenNodes)
+      case pcit: PlayedCardInTree => CardNode(pcit, childrenNodes)
+    }
+    
+    def unapply(node: CardTreeOrNode): Option[(PlayedCard, Seq[CardNode])] = Some((node.playedCard, node.childrenNodes))
+  }
 
-  case class CardTree(playedCard: PlayedStartingCard, childrenNodes: Seq[CardNode])
+  case class CardTree(playedCard: PlayedStartingCard, childrenNodes: Seq[CardNode]) extends CardTreeOrNode
 
-  case class CardNode(playedCard: PlayedCardInTree, childrenNodes: Seq[CardNode])
+  case class CardNode(playedCard: PlayedCardInTree, childrenNodes: Seq[CardNode]) extends CardTreeOrNode
 
   trait PlayedCard {
     val `type`: String
@@ -46,7 +60,7 @@ package models {
     `type`: String = "PlayedStartingCardInTree",
     card: Card,
     whoPlayedId: Int,
-    targetCardId: Int) extends PlayedCard
+    parentCardId: Int) extends PlayedCard
 }
 
 package object models {
@@ -90,4 +104,5 @@ package object models {
   implicit val cardNodeFormat = Json.format[CardNode] 
   implicit val cardTreeFormat = Json.format[CardTree]
   implicit val gameStateFormat = Json.format[GameState]
+  implicit val cardTreeOrNodeFormat = Json.format[CardTreeOrNode]
 }

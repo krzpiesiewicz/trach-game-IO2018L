@@ -63,7 +63,7 @@ lazy val commonSettings = Seq(
   scalaVersion := "2.12.6",
   organization := "com.example",
   libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test",
-  scalacOptions ++= Seq("-feature")
+  scalacOptions ++= Seq("-feature"),
 )
 
 lazy val akkaVersion = "2.5.19"
@@ -76,3 +76,5 @@ val macwireVersion = "2.3.1"
 val macwireMacros = "com.softwaremill.macwire" %% "macros" % macwireVersion % Provided
 val macwireUtil = "com.softwaremill.macwire" %% "util" % macwireVersion
 val macwireProxy = "com.softwaremill.macwire" %% "proxy" % macwireVersion
+
+resolvers in ThisBuild += "Artima Maven Repository" at "http://repo.artima.com/releases"

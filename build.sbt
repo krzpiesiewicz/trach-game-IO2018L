@@ -1,6 +1,14 @@
 lazy val root = (project in file("."))
-  .aggregate(game, server)
+  .aggregate(jvmapi, game, bot, server)
   .settings(commonSettings: _*)
+  
+lazy val jvmapi = (project in file("jvmapi"))
+  .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      playJson,
+    )
+  )
   
 lazy val game = (project in file("game"))
   .settings(commonSettings: _*)
@@ -9,11 +17,22 @@ lazy val game = (project in file("game"))
       "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
       "ch.qos.logback" % "logback-classic" % "1.2.3",
       "com.google.inject" % "guice" % "4.2.2",
-      "com.typesafe.akka" %% "akka-actor" % akkaVersion,
-      "com.typesafe.akka" %% "akka-testkit" % akkaVersion,
+      akkaActor,
+      akkaTestKit,
       playJson,
     )
-  )
+  ).dependsOn(jvmapi)
+  
+lazy val bot = (project in file("bot"))
+  .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      akkaActor,
+      akkaTestKit,
+      "junit" % "junit" % "4.12" % Test,
+      "com.novocode" % "junit-interface" % "0.11" % Test exclude("junit", "junit-dep")
+    )
+  ).dependsOn(jvmapi)
   
 lazy val server = (project in file("server"))
   .settings(commonSettings: _*)
@@ -38,7 +57,7 @@ lazy val server = (project in file("server"))
     )
   )
   .enablePlugins(PlayScala)
-  .dependsOn(game)
+  .dependsOn(jvmapi, game, bot)
   
 lazy val commonSettings = Seq(
   scalaVersion := "2.12.6",
@@ -48,8 +67,10 @@ lazy val commonSettings = Seq(
 )
 
 lazy val akkaVersion = "2.5.19"
+lazy val akkaActor = "com.typesafe.akka" %% "akka-actor" % akkaVersion
+lazy val akkaTestKit = "com.typesafe.akka" %% "akka-testkit" % akkaVersion
 
-lazy val playJson = "com.typesafe.play" %% "play-json" % "2.7.0-RC2"
+lazy val playJson = "com.typesafe.play" %% "play-json" % "2.7.3"
 
 val macwireVersion = "2.3.1"
 val macwireMacros = "com.softwaremill.macwire" %% "macros" % macwireVersion % Provided

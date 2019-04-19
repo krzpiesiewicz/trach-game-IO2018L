@@ -2,7 +2,7 @@ package actors
 
 import akka.actor._
 
-import messagesapi._
+import messages._
 
 class GamesManagerActor extends Actor {
   

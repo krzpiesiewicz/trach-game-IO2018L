@@ -5,7 +5,8 @@ import play.api.libs.json._
 
 import game.Logging.logger
 
-import game.gameplay.modelsapi._
+import jvmapi.models._
+import game.gameplay.modelsconverters._
 
 import game.core.PlayedCardAtPlayerRequest
 import game.core.PlayedCardInTreeRequest
@@ -13,12 +14,12 @@ import game.core.TreeWithCards
 
 class ApiTest extends FunSuite {
 
-  test("GameStateApi") {
+  test("ModelsConvertersTest") {
     import DafaultData.data1._
 
-    val gameStateApi = GameStateApi(state)
-    val gameStateApiJson = Json.toJson(gameStateApi)
-    //    logger.info(gameStateApiJson.toString() + "\n")
+    val gameState = toGameStateModel(state)
+    val gameStateJson = Json.toJson(gameState)
+    //    logger.info(gameStateJson.toString() + "\n")
 
     val json1 = Json.parse("""
 |{
@@ -31,11 +32,11 @@ class ApiTest extends FunSuite {
 |  "tableActiveCards":[]
 |}""".stripMargin)
 
-    assert(json1 == gameStateApiJson)
+    assert(json1 == gameStateJson)
     
-    val fromJson1 = Json.fromJson[GameStateApi](json1)
+    val fromJson1 = Json.fromJson[GameState](json1)
     assert(fromJson1.isSuccess)
-    assert(fromJson1.get == gameStateApi)
+    assert(fromJson1.get == gameState)
 
     // p1 plays his ac at p2
     val (table1, _) = table.attachCard(PlayedCardAtPlayerRequest(ac.id, p1.id, p2.id))
@@ -43,9 +44,9 @@ class ApiTest extends FunSuite {
     // p1 increases priority of attack
     val (table2, _) = table1.attachCard(PlayedCardInTreeRequest(pic.id, p1.id, ac.id))
 
-    val gameStateApi2 = GameStateApi(table2)
-    val gameStateApiJson2 = Json.toJson(gameStateApi2)
-    //    logger.info(gameStateApiJson2.toString() + "\n")
+    val gameState2 = toGameStateModel(table2)
+    val gameStateJson2 = Json.toJson(gameState2)
+    //    logger.info(gameStateJson2.toString() + "\n")
 
     val json2 = Json.parse("""
 |{
@@ -57,18 +58,18 @@ class ApiTest extends FunSuite {
 |  "usedCardsStack":[],
 |  "tableActiveCards":[],
 |  "cardTree": {
-|    "playedCard": {"type":"PlayedStartingCardAtPlayer","cardId":1,"whoPlayedId":1,"targetPlayerId":2},
+|    "playedCard": {"type":"PlayedStartingCardAtPlayer","card":{"id":1,"type":"attack"},"whoPlayedId":1,"targetPlayerId":2},
 |    "childrenNodes": [
-|      {"playedCard":{"type":"PlayedStartingCardInTree","cardId":4,"whoPlayedId":1,"targetCardId":1},"childrenNodes":[]}
+|      {"playedCard":{"type":"PlayedStartingCardInTree","card":{"id":4,"type":"priority_inc"},"whoPlayedId":1,"targetCardId":1},"childrenNodes":[]}
 |    ]
 |  }
 |}""".stripMargin)
 
-    assert(json2 == gameStateApiJson2)
+    assert(json2 == gameStateJson2)
 
-    val fromJson2 = Json.fromJson[GameStateApi](json2)
+    val fromJson2 = Json.fromJson[GameState](json2)
 
     assert(fromJson2.isSuccess)
-    assert(fromJson2.get == gameStateApi2)
+    assert(fromJson2.get == gameState2)
   }
 }

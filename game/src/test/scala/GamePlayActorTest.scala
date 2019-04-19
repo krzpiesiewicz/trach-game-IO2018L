@@ -9,19 +9,21 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 import com.typesafe.scalalogging.Logger
+import com.typesafe.config.ConfigFactory
 
 import play.api.libs.json._
 
 import game.Logging.logger
 
-import game.gameplay.modelsapi._
-import game.gameplay.messagesapi._
+import jvmapi.models._
+import jvmapi.messages._
+
 import game.gameplay.GamePlayActor
+import game.gameplay.modelsconverters._
 
 import game.core.PlayedCardAtPlayerRequest
 import game.core.PlayedCardInTreeRequest
 import game.core.TreeWithCards
-import com.typesafe.config.ConfigFactory
 
 class GamePlayActorTest extends FunSuite with BeforeAndAfterAll {
 
@@ -60,8 +62,8 @@ class GamePlayActorTest extends FunSuite with BeforeAndAfterAll {
       PlayedCardRequestMsg(
         gamePlayId = gamePlayId,
         updateId = updateId0,
-        played = PlayedStartingCardAtPlayerApi(
-          cardId = ac2.id,
+        played = PlayedStartingCardAtPlayer(
+          card = ac2,
           whoPlayedId = p1.id,
           targetPlayerId = p2.id)),
       probe.ref)
@@ -71,8 +73,8 @@ class GamePlayActorTest extends FunSuite with BeforeAndAfterAll {
       PlayedCardRequestMsg(
         gamePlayId = gamePlayId,
         updateId = updateId0,
-        played = PlayedStartingCardAtPlayerApi(
-          cardId = ac.id,
+        played = PlayedStartingCardAtPlayer(
+          card = ac,
           whoPlayedId = p1.id,
           targetPlayerId = p2.id)),
       probe.ref)
@@ -93,8 +95,8 @@ class GamePlayActorTest extends FunSuite with BeforeAndAfterAll {
       PlayedCardRequestMsg(
         gamePlayId = gamePlayId,
         updateId = updateId1,
-        played = PlayedCardInTreeApi(
-          cardId = dc.id,
+        played = PlayedCardInTree(
+          card = dc,
           whoPlayedId = p2.id,
           targetCardId = ac.id)),
       probe.ref)

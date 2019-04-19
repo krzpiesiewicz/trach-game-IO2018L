@@ -4,10 +4,10 @@ import akka.actor._
 
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json
-
-import game.gameplay.messagesapi.MsgFromClient
-import messagesapi._
 import play.api.libs.json.JsSuccess
+
+import jvmapi.messages.MsgFromClient
+import messages._
 
 class ClientActor(out: ActorRef, gamesManager: ActorRef) extends Actor {
 

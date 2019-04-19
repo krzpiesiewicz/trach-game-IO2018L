@@ -1,26 +1,26 @@
-package game.gameplay
+package jvmapi
 
 import play.api.libs.json._
 import play.api.libs.json.Format._
 
-package object messagesapi {
+package messages {
 
-  import game.gameplay.modelsapi._
+  import jvmapi.models._
 
   /**
-   * Message incoming outside the server via socket.
+   * Message incoming outside the server via websocket.
    */
   trait MsgFromClient
   
   /**
-   * Message corresponding to the game play of the given id.
+   * Message related to the game play of the given id.
    */
   trait GamePlayMsg {
     val gamePlayId: Long
   }
   
   /**
-   * Message corresponding to the update of the given id.
+   * Message related to the update of the given id.
    */
   trait GamePlayUpdateMsg extends GamePlayMsg {
     val updateId: Long
@@ -34,13 +34,13 @@ package object messagesapi {
     msgType: String = "GameStateUpdate",
     gamePlayId: Long,
     updateId: Long,
-    gameState: GameStateApi) extends GamePlayUpdateMsg
+    gameState: GameState) extends GamePlayUpdateMsg
 
   case class PlayedCardRequestMsg(
     msgType: String = "PlayedCardRequest",
     gamePlayId: Long,
     updateId: Long,
-    played: PlayedCardApi) extends MsgFromClient with GamePlayUpdateMsg
+    played: PlayedCard) extends MsgFromClient with GamePlayUpdateMsg
 
   case class NoActionRequestMsg(
     msgType: String = "NoActionRequest",
@@ -56,6 +56,9 @@ package object messagesapi {
     msgType: String = "GamePlayResult",
     gamePlayId: Long,
     winnerId: Int) extends GamePlayMsg
+}
+
+package object messages {
 
   implicit val gameStateRequestMsgFormat = Json.format[GameStateRequestMsg]
   implicit val gameStateUpdateMsgFormat = Json.format[GameStateUpdateMsg]

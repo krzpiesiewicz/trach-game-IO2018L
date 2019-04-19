@@ -1,11 +1,11 @@
-package messagesapi
+package jvmapi
 
 import scala.language.implicitConversions
 
 import play.api.libs.json._
 import play.api.libs.json.Json.JsValueWrapper
 
-object JsonUtils {
+package object jsonutils {
   /**
    * https://stackoverflow.com/questions/15488639/how-to-write-readst-and-writest-in-scala-enumeration-play-framework-2-1
    */

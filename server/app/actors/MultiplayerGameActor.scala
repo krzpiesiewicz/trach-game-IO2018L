@@ -3,10 +3,10 @@ package actors
 import scala.concurrent.ExecutionContext
 import akka.actor._
 
-import game.gameplay.messagesapi._
+import jvmapi.messages._
 import game.gameplay.GamePlayActor
 
-import messagesapi._
+import messages._
 
 
 class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec: ExecutionContext) extends Actor {

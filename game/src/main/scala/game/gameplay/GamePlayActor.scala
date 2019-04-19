@@ -3,20 +3,20 @@ package game.gameplay
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
 
-import akka.actor.{ Actor, ActorLogging, ActorRef, ActorSystem, Props }
+import akka.actor.{ Actor, ActorLogging, ActorRef, ActorSystem, Props, Cancellable, ActorContext }
 import akka.event.Logging
 
+import game.core.Player.PlayerId
 import game.core.{ GameState, Table }
 import game.standardtrach.actions.buildersFactory
 
-import game.gameplay.modelsapi.GameStateApi
-import game.gameplay.modelsapi.PlayedCardApi
-import game.gameplay.messagesapi._
+import jvmapi.models.{GameState => GameStateApi}
+import jvmapi.models.{PlayedCard => PlayedCardApi}
+import jvmapi.messages._
 
 import game.gameplay.GamePlayActor._
-import game.core.Player.PlayerId
-import akka.actor.Cancellable
-import akka.actor.ActorContext
+import game.gameplay.modelsconverters._
+
 
 class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionContext) extends Actor with ActorLogging {
 

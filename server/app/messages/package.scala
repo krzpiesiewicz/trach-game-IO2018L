@@ -1,11 +1,10 @@
 import play.api.libs.json._
 import play.api.libs.json.Format._
 
-import game.gameplay.messagesapi._
+import jvmapi.messages._
+import jvmapi.jsonutils._
 
-import messagesapi.JsonUtils._
-
-package object messagesapi {
+package object messages {
 
   case class GamePlayInfoRequestMsg(
     msgType: String = "GamePlayInfoRequest",

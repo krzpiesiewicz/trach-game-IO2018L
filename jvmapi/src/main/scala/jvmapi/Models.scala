@@ -13,10 +13,10 @@ package models {
 
   case class GameState(
     players: Seq[Player],
-    coveredCardsStack: Seq[Card],
-    usedCardsStack: Seq[Card],
-    tableActiveCards: Seq[Card],
-    cardTree: Option[CardTree])
+    coveredCardsStack: Seq[Card] = Seq.empty,
+    usedCardsStack: Seq[Card] = Seq.empty,
+    tableActiveCards: Seq[Card] = Seq.empty,
+    cardTree: Option[CardTree] = None)
     
   trait CardTreeOrNode {
     val playedCard: PlayedCard
@@ -32,9 +32,9 @@ package models {
     def unapply(node: CardTreeOrNode): Option[(PlayedCard, Seq[CardNode])] = Some((node.playedCard, node.childrenNodes))
   }
 
-  case class CardTree(playedCard: PlayedStartingCard, childrenNodes: Seq[CardNode]) extends CardTreeOrNode
+  case class CardTree(playedCard: PlayedStartingCard, childrenNodes: Seq[CardNode] = Seq.empty) extends CardTreeOrNode
 
-  case class CardNode(playedCard: PlayedCardInTree, childrenNodes: Seq[CardNode]) extends CardTreeOrNode
+  case class CardNode(playedCard: PlayedCardInTree, childrenNodes: Seq[CardNode] = Seq.empty) extends CardTreeOrNode
 
   trait PlayedCard {
     val `type`: String
@@ -57,7 +57,7 @@ package models {
     targetCardId: Int) extends PlayedStartingCard
 
   case class PlayedCardInTree(
-    `type`: String = "PlayedStartingCardInTree",
+    `type`: String = "PlayedCardInTree",
     card: Card,
     whoPlayedId: Int,
     parentCardId: Int) extends PlayedCard

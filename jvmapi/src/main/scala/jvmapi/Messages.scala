@@ -40,6 +40,7 @@ package messages {
     msgType: String = "PlayedCardsRequest",
     gamePlayId: Long,
     updateId: Long,
+    playerId: Int,
     played: CardTreeOrNode) extends MsgFromClient with GamePlayUpdateMsg
 
   case class NoActionRequestMsg(

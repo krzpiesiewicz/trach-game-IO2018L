@@ -6,7 +6,6 @@ import game.standardtrach.actions._
 import game.standardtrach.actions.attacks._
 import game.standardtrach.actions.PriorityIncrementer
 import game.standardtrach.DefaultAttributes._
-import game.gameplay._
 
 object DafaultData {
   object data1 {
@@ -17,6 +16,7 @@ object DafaultData {
     val dc = Card[DefenceCard]()
     val pic = Card[PriorityIncrementerCard]()
     val pic2 = Card[PriorityIncrementerCard]()
+    val shc = Card[ShelterCard]()
     
     val cards = Seq(ac, pic, dc, ac2, pic2)
     
@@ -34,7 +34,7 @@ object DafaultData {
     val state = NormalState(new DefaultAttributesSet(Seq(
         DefaultPlayers(circle),
         DefaultAllCards(cards),
-        DefaultCoveredCardsStack(Vector.empty),
+        DefaultCoveredCardsStack(Vector(shc)),
         DefaultDiscardedCardsStack(Vector.empty),
         DefaultGlobalActiveCards(Vector.empty),
         DefaultRoundsManager(p1)

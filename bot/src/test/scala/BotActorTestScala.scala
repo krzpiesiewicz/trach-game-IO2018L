@@ -45,7 +45,7 @@ class BotActorTestScala extends FunSuite with BeforeAndAfterAll {
 		bot.tell(msg, probe.ref)
 		
 		val reply = probe.expectMsgPF(1.second) {
-      case msg: PlayedCardRequestMsg => msg
+      case msg: PlayedCardsRequestMsg => msg
       case _ => throw new Exception("Wrong message")
     }
 		

@@ -7,11 +7,10 @@ import game.core.actions.BuildersFactory
 
 import jvmapi.models._
 
-
 package object modelsconverters {
 
   // converters game objects to jvmapi models:
-  
+
   implicit def toCardModel(card: game.core.Card): Card = Card(card.id, Cards.nameOf(card))
 
   implicit def toPlayerModel(player: game.core.Player): Player = Player(
@@ -50,8 +49,8 @@ package object modelsconverters {
   implicit def toCardNodeModel(node: game.core.CardInnerNode): CardNode = CardNode(
     node.playedCard,
     node.children.map(toCardNodeModel(_)))
-    
-    def toGameStateModel(state: game.core.GameState, treeOpt: Option[game.core.TreeOfCards]): GameState = GameState(
+
+  def toGameStateModel(state: game.core.GameState, treeOpt: Option[game.core.TreeOfCards]): GameState = GameState(
     state.playersMap.values.map(toPlayerModel(_)).toSeq,
     state.coveredCardsStack.cards,
     state.discardedCardsStack.cards,
@@ -67,9 +66,9 @@ package object modelsconverters {
   implicit def toGameStateModel(state: game.core.GameState): GameState = toGameStateModel(state, None)
 
   implicit def toGameStateModel(table: game.core.Table): GameState = toGameStateModel(table.state, Some(table.tree))
-  
+
   // convertes jvmapi models to game objects:
-  
+
   /**
    * It checks if a request is correct according to a game state. It means checking if all ids can be mapped for existing objects
    * (throws an exception if something does not exist in game state).
@@ -80,7 +79,7 @@ package object modelsconverters {
     case pc: PlayedStartingCardAtCard => toPlayedStartingCardAtCard(pc)
     case pc: PlayedCardInTree => toPlayedCardInTree(pc)
   }
-  
+
   implicit def toPlayedStartingCard(pc: PlayedStartingCard)(implicit state: game.core.GameState): game.core.PlayedStartingCard[_ <: game.core.Card] =
     toPlayedCard(pc).asInstanceOf[game.core.PlayedStartingCard[_ <: game.core.Card]]
 
@@ -98,13 +97,15 @@ package object modelsconverters {
     state.card(pc.card.id),
     state.player(pc.whoPlayedId),
     state.card(pc.parentCardId))
-  
-  implicit def toTreeWithCards(tree: CardTree)(implicit state: game.core.GameState, buildersFactory: BuildersFactory): game.core.TreeWithCards =
-    tree.children.map(toCardInnerNode(_)).foldLeft(game.core.TreeWithCards(tree.playedCard)) { case (root, node) => root.attach(node)}
-    
-  implicit def toCardInnerNode(cardNode: CardNode)(implicit state: game.core.GameState, buildersFactory: BuildersFactory): game.core.CardInnerNode =
-    cardNode.children.map(toCardInnerNode(_)).foldLeft(game.core.CardInnerNode(cardNode.playedCard)) { case (root, node) => root.attach(node)}
-    
+
+  implicit def toTreeWithCards(tree: CardTree)(implicit state: game.core.GameState, buildersFactory: BuildersFactory): game.core.TreeWithCards = {
+    tree.childrenNodes.map(toCardInnerNode(_)).foldLeft(game.core.TreeWithCards(tree.playedCard)) { case (root, node) => root.attach(node) }
+  }
+
+  implicit def toCardInnerNode(cardNode: CardNode)(implicit state: game.core.GameState, buildersFactory: BuildersFactory): game.core.CardInnerNode = {
+    cardNode.childrenNodes.map(toCardInnerNode(_)).foldLeft(game.core.CardInnerNode(cardNode.playedCard)) { case (root, node) => root.attach(node) }
+  }
+
   implicit def toCardNode(treeOrNode: CardTreeOrNode)(implicit state: game.core.GameState, buildersFactory: BuildersFactory): game.core.CardNode = treeOrNode match {
     case tree: CardTree => toTreeWithCards(tree)
     case node: CardNode => toCardInnerNode(node)

@@ -60,6 +60,6 @@ public class BotActorTest {
 
 		bot.tell(msg, probe.getRef());
 		
-		var reply = probe.expectMsgClass(PlayedCardRequestMsg.class);
+		var reply = probe.expectMsgClass(PlayedCardsRequestMsg.class);
 	}
 }

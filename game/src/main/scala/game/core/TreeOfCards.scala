@@ -62,6 +62,11 @@ trait CardNode {
    */
   def attach(pcit: PlayedCardInTree[_ <: Card])(implicit buildersFactory: BuildersFactory): N =
     attach(CardInnerNode(pcit, buildersFactory.createTransformerBuilder(pcit)))
+    
+  /**
+   * Returns all played cards which the tree contains.
+   */
+  def playedCards: Seq[PlayedCard[_ <: Card]] = children.foldLeft(Seq[PlayedCard[_ <: Card]](playedCard)){case (seq, child) => seq ++ child.playedCards}
 }
 
 /**

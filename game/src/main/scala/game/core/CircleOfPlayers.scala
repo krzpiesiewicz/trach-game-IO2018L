@@ -2,7 +2,7 @@ package game.core
 
 import Player.PlayerId
 
-case class CircleOfPlayers(val playersOrder: Array[Player]) {
+case class CircleOfPlayers(val playersOrder: Seq[Player]) {
 
   lazy val playersMap: Map[PlayerId, Player] = playersOrder.foldLeft[Map[PlayerId, Player]](Map.empty) {
     case (map, player) => map + (player.id -> player)

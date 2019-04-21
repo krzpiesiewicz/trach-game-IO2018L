@@ -10,8 +10,8 @@ import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 
+import jvmapi.*;
 import jvmapi.models.*;
-import scala.collection.JavaConverters;
 import jvmapi.messages.*;
 
 public class BotActor extends AbstractActor {
@@ -53,7 +53,7 @@ public class BotActor extends AbstractActor {
         		msg -> {
 //        			log.info(msg.toString());
         			
-        			var myMsg = new PlayedCardsRequestMsg(
+        			var myMsg = new MsgFromPlayerDriver(new BotDriver(getSelf()), new PlayedCardsRequestMsg(
         					"PlayedCardRequest",
         					gamePlayId,
         					msg.updateId(),
@@ -64,7 +64,7 @@ public class BotActor extends AbstractActor {
         							playerId,
         							2),
         							JavaConverters.collectionAsScalaIterable(new ArrayList<CardNode>()).toSeq()
-        							));
+        							)));
         			
         			getSender().tell(myMsg, getSelf());
         		}

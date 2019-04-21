@@ -13,6 +13,7 @@ import com.typesafe.config.ConfigFactory
 
 import play.api.libs.json._
 
+import jvmapi._
 import jvmapi.models._
 import jvmapi.messages._
 
@@ -45,7 +46,7 @@ class BotActorTestScala extends FunSuite with BeforeAndAfterAll {
 		bot.tell(msg, probe.ref)
 		
 		val reply = probe.expectMsgPF(1.second) {
-      case msg: PlayedCardsRequestMsg => msg
+      case MsgFromPlayerDriver(botref, msg: PlayedCardsRequestMsg)  => msg
       case _ => throw new Exception("Wrong message")
     }
 		

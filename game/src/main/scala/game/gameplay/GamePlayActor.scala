@@ -28,6 +28,7 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
   private def checkForInitialGameState: Receive = {
     case state: GameState =>
       context.become(checkForStartingCardRequest(state, 0))
+    case _ => sender ! WaitingForGameState
   }
 
   private def checkForStartingCardRequest(state: GameState, updateId: Long) = checkForCardRequest(
@@ -133,6 +134,9 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
 }
 
 object GamePlayActor {
+  
+  case object WaitingForGameState
+  
   case class TimeToEvaluate(updateId: Long)
 
   trait Timer

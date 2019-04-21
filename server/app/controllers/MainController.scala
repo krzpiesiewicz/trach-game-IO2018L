@@ -2,6 +2,8 @@ package controllers
 
 import com.google.inject._
 
+import scala.concurrent.ExecutionContext
+
 import play.api._
 import play.api.mvc._
 import play.api.libs.streams.ActorFlow
@@ -13,8 +15,10 @@ import akka.stream.Materializer
 import actors.ClientActor
 import actors.GamesManagerActor
 
+import db._
+
 @Singleton
-class MainController @Inject() (cc: ControllerComponents) (implicit system: ActorSystem, mat: Materializer) extends AbstractController(cc) {
+class MainController @Inject() (cc: ControllerComponents) (implicit system: ActorSystem, mat: Materializer, ec: ExecutionContext) extends AbstractController(cc) {
 
   val gamesManager = system.actorOf(GamesManagerActor.props)
   
@@ -24,9 +28,14 @@ class MainController @Inject() (cc: ControllerComponents) (implicit system: Acto
     }
   }
   
+  /**
+   * TODO Authentication of users
+   */
   def socket = WebSocket.accept[JsValue, JsValue] { request =>
     ActorFlow.actorRef { out =>
-      ClientActor.props(out, gamesManager)
+      val userId = Database.getFreeUserId()
+      val user = User(userId, s"Anonymous user $userId")
+      ClientActor.props(out, gamesManager, user)
     }
   }
 }

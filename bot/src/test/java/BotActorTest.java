@@ -16,6 +16,7 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.testkit.javadsl.TestKit;
 
+import jvmapi.*;
 import jvmapi.models.*;
 import jvmapi.messages.*;
 
@@ -60,6 +61,6 @@ public class BotActorTest {
 
 		bot.tell(msg, probe.getRef());
 		
-		var reply = probe.expectMsgClass(PlayedCardsRequestMsg.class);
+		var reply = probe.expectMsgClass(MsgFromPlayerDriver.class);
 	}
 }

@@ -7,6 +7,7 @@ lazy val jvmapi = (project in file("jvmapi"))
   .settings(
     libraryDependencies ++= Seq(
       playJson,
+      akkaActor
     )
   )
   
@@ -16,7 +17,7 @@ lazy val game = (project in file("game"))
     libraryDependencies ++= Seq(
       "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
       "ch.qos.logback" % "logback-classic" % "1.2.3",
-      "com.google.inject" % "guice" % "4.2.2",
+      guice,
       akkaActor,
       akkaTestKit,
       playJson,
@@ -48,11 +49,11 @@ lazy val server = (project in file("server"))
     routesGenerator := play.routes.compiler.InjectedRoutesGenerator,
     PlayKeys.devSettings ++= Seq(
       "play.server.http.port" -> "disabled",
-      "play.server.http.idleTimeout" -> "180s",
-      "play.client.http.idleTimeout" -> "180s",
+      "play.server.http.idleTimeout" -> "1000s",
+      "play.client.http.idleTimeout" -> "1000s",
       "play.server.https.port" -> "9001",
-      "play.server.https.idleTimeout" -> "180s",
-      "play.client.https.idleTimeout" -> "180s",
+      "play.server.https.idleTimeout" -> "1000s",
+      "play.client.https.idleTimeout" -> "1000s",
       "engineProvider" -> "play.core.server.ssl.DefaultSSLEngineProvider"
     )
   )

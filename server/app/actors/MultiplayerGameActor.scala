@@ -26,6 +26,7 @@ class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec
 
   private var gamePlay: ActorRef = _
   private var playersAndDrivers: PlayersAndDrivers = _
+  private var usersToDrivers: Map[User, UserDriver] = _
   private var gamePlayState: GamePlayState = _
 
   override def preStart() {
@@ -36,13 +37,12 @@ class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec
     gamePlay ! gameState
 
     gamePlayState = GamePlayState.RUNNING
-    
-    log.debug(Json.stringify(Json.toJson(gamePlayState)))
 
     playersAndDrivers = new PlayersAndDrivers(playersToDrivers = gameState.playersMap.keys.map(playerId => (playerId, NoDriver)).toMap)
+    usersToDrivers = Map.empty
 
     context.become(ready)
-    
+
     log.debug(s"MultiplayerGameActor(gamePlayId=$gamePlayId): I am ready")
   }
 
@@ -62,11 +62,7 @@ class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec
       msg match {
         case _: GamePlayInfoRequestMsg =>
           playersAndDrivers.player(driver) match {
-            case Some(playerId) =>
-              sender ! msgToPlayerDriver(driver, GamePlayInfoUpdateMsg(
-                gamePlayId = gamePlayId,
-                playerId = playerId,
-                gamePlayState = gamePlayState))
+            case Some(playerId) => sendGamePlayInfoUpdate(driver, playerId)
             case None => {}
           }
         case _ =>
@@ -76,30 +72,52 @@ class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec
 
     case MsgFromUser(user, msg) => msg match {
       case EnterGame =>
-        val playerIdOpt = playersAndDrivers.player(user) match {
+        val driver = usersToDrivers.get(user) match {
+          case Some(driver) =>
+            if (driver.actorRef != sender) {
+              val newDriver = addNewDriverForUser(user, sender)
+              playersAndDrivers = playersAndDrivers.withUpdatedDriver(driver, newDriver)
+              newDriver
+            } else
+              driver
+          case None =>
+            addNewDriverForUser(user, sender)
+        }
+        val playerIdOpt = playersAndDrivers.player(driver) match {
           case Some(playerId) => Some(playerId)
           case None => playersAndDrivers.playersWithNoDriver.headOption match {
             case None => None
             case Some(playerId) =>
-              playersAndDrivers = playersAndDrivers.withDriver(user, sender, playerId)
+              playersAndDrivers = playersAndDrivers.withDriver(driver, playerId)
               log.debug(s"MultiplayerGameActor(gamePlayId=$gamePlayId): user $user entered the game as player of id=$playerId")
               Some(playerId)
           }
         }
         playerIdOpt match {
-          case Some(playerId) => self.tell(MsgFromPlayerDriver(user, GamePlayInfoRequestMsg(gamePlayId=gamePlayId)), sender)
+          case Some(playerId) =>
+            sendGamePlayInfoUpdate(driver, playerId)
           case None => {}
         }
     }
-    
+
     case msg: GamePlayMsg =>
+      log.debug(s"I got msg from GamePlayActor of type ${msg.msgType}")
       playersAndDrivers.playersToDrivers.foreach({
-        case (playerId, driver) =>
-          playersAndDrivers.driversToRefs.get(driver) match {
-            case Some(ref) => ref ! msgToPlayerDriver(driver, msg)
-            case None => {}
-          }
+        case (playerId, driver) => sendMsgToPlayerDriver(driver, msg)
       })
+  }
+
+  private def addNewDriverForUser(user: User, userRef: ActorRef): UserDriver = {
+    val newDriver = UserDriver(user, userRef)
+    usersToDrivers = usersToDrivers.updated(user, newDriver)
+    newDriver
+  }
+
+  private def sendGamePlayInfoUpdate(driver: PlayerDriver, playerId: Int) {
+    sendMsgToPlayerDriver(driver, GamePlayInfoUpdateMsg(
+      gamePlayId = gamePlayId,
+      playerId = playerId,
+      gamePlayState = gamePlayState))
   }
 }
 

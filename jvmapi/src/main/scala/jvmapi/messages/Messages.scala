@@ -5,20 +5,24 @@ import play.api.libs.json.Format._
 
 import jvmapi.models._
 
+trait Msg {
+  val msgType: String
+}
+
 /**
  * Message incoming outside the server via websocket.
  */
-trait MsgFromClient
+trait MsgFromClient extends Msg
 
 /**
  * Outgoing message to client from server sent via websocket.
  */
-trait MsgToClient
+trait MsgToClient extends Msg
 
 /**
  * Message related to the game play of the given id.
  */
-trait GamePlayMsg {
+trait GamePlayMsg extends Msg {
   val gamePlayId: Long
 }
 

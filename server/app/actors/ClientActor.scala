@@ -19,8 +19,9 @@ import actors.MultiplayerGameActor.EnterGame
 
 class ClientActor(out: ActorRef, gamesManager: ActorRef, user: User) extends Actor with ActorLogging {
 
+  val userDriver = UserDriver(user, self)
+  
   override def preStart() = {
-    out ! Json.parse("""{"hej": 11}""")
   }
   
   override def postStop() = {
@@ -79,9 +80,9 @@ class ClientActor(out: ActorRef, gamesManager: ActorRef, user: User) extends Act
   private def playing(game: ActorRef, gamePlayId: Long): Receive = receiveMsgFromClient({
     // in case that user has not been informed about game play and he demands info
     case _: QuickMultiplayerGameRequestMsg =>
-      game ! MsgFromPlayerDriver(user, GamePlayInfoRequestMsg(gamePlayId = gamePlayId))
+      game ! MsgFromPlayerDriver(userDriver, GamePlayInfoRequestMsg(gamePlayId = gamePlayId))
     // game actor services GamePlayMsg
-    case msg: GamePlayMsg => game ! MsgFromPlayerDriver(user, msg)
+    case msg: GamePlayMsg => game ! MsgFromPlayerDriver(userDriver, msg)
   })
     .orElse(transmitMsgToUser)
 
@@ -91,14 +92,17 @@ class ClientActor(out: ActorRef, gamesManager: ActorRef, user: User) extends Act
     case json: JsValue => msgFromClientReads.reads(json) match {
       case JsSuccess(msg: MsgFromClient, _) =>
         log.debug(msg.toString())
-        fromClientReceive(msg)
+        if (fromClientReceive.isDefinedAt(msg))
+          fromClientReceive.apply(msg)
+//        fromClientReceive.applyOrElse(msg, _: MsgFromClient => {})
       case _ => { /*wrong json message*/ }
     }
   }
 
   private def receiveMsgToUserAndTransmitToClient(toClientReceive: PartialFunction[MsgToClient, Unit]): Receive = {
     case MsgToUser(`user`, msg: MsgToClient) =>
-      toClientReceive(msg)
+      if (toClientReceive.isDefinedAt(msg))
+        toClientReceive.apply(msg)
       sendToClient(msg)
   }
 

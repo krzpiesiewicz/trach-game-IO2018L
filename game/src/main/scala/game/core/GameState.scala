@@ -49,7 +49,8 @@ trait EndState extends GameState
 object GameState {
   
   def removeCardFromPlayersHand(player: Player, card: Card, state: GameState): GameState = {
-    if (player.hand.cards contains card) {
+    val p = state.player(player)
+    if (p.hand.cards contains card) {
       val coveredStack = state.attributes.forceGet[CoveredCardsStack]
       val (poppedCardOpt, restOfStack) = coveredStack.pop match {
         case Some((poppedCard, restOfStack)) => (Some(poppedCard), restOfStack)
@@ -57,7 +58,7 @@ object GameState {
       }
       state transformed {
         case stack: CoveredCardsStack => restOfStack;
-        case players: Players => players.updatePlayer(player.transformed {
+        case players: Players => players.updatePlayer(p.transformed {
           case hand: Hand => hand.replacedCard(card, poppedCardOpt);
         });
       }

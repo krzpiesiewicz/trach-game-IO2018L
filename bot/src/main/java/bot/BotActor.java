@@ -1,10 +1,16 @@
 package bot;
 
+import java.util.ArrayList;
+
+import scala.collection.JavaConverters;
+import scala.collection.Seq;
+
 import akka.actor.AbstractActor;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 
+import jvmapi.*;
 import jvmapi.models.*;
 import jvmapi.messages.*;
 
@@ -47,15 +53,18 @@ public class BotActor extends AbstractActor {
         		msg -> {
 //        			log.info(msg.toString());
         			
-        			var myMsg = new PlayedCardRequestMsg(
+        			var myMsg = new MsgFromPlayerDriver(new BotDriver(getSelf()), new PlayedCardsRequestMsg(
         					"PlayedCardRequest",
         					gamePlayId,
         					msg.updateId(),
-        					new PlayedStartingCardAtPlayer(
+        					playerId,
+        					new CardTree(new PlayedStartingCardAtPlayer(
         							"PlayedStartingCardAtPlayer",
         							new Card(1, "attack"),
         							playerId,
-        							2));
+        							2),
+        							JavaConverters.collectionAsScalaIterable(new ArrayList<CardNode>()).toSeq()
+        							)));
         			
         			getSender().tell(myMsg, getSelf());
         		}

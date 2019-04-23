@@ -11,8 +11,6 @@ import scala.language.postfixOps
 import com.typesafe.scalalogging.Logger
 import com.typesafe.config.ConfigFactory
 
-import play.api.libs.json._
-
 import game.Logging.logger
 
 import jvmapi.models._
@@ -20,10 +18,6 @@ import jvmapi.messages._
 
 import game.gameplay.GamePlayActor
 import game.gameplay.modelsconverters._
-
-import game.core.PlayedCardAtPlayerRequest
-import game.core.PlayedCardInTreeRequest
-import game.core.TreeWithCards
 
 class GamePlayActorTest extends FunSuite with BeforeAndAfterAll {
 
@@ -59,24 +53,26 @@ class GamePlayActorTest extends FunSuite with BeforeAndAfterAll {
 
     // p2 cannot play his card because it is not his turn
     gamePlay.tell(
-      PlayedCardRequestMsg(
+      PlayedCardsRequestMsg(
         gamePlayId = gamePlayId,
         updateId = updateId0,
-        played = PlayedStartingCardAtPlayer(
+        playerId = p1.id,
+        played = CardTree(PlayedStartingCardAtPlayer(
           card = ac2,
           whoPlayedId = p1.id,
-          targetPlayerId = p2.id)),
+          targetPlayerId = p2.id))),
       probe.ref)
 
     // p1 plays his ac at p2
     gamePlay.tell(
-      PlayedCardRequestMsg(
+      PlayedCardsRequestMsg(
         gamePlayId = gamePlayId,
         updateId = updateId0,
-        played = PlayedStartingCardAtPlayer(
+        playerId = p1.id,
+        played = CardTree(PlayedStartingCardAtPlayer(
           card = ac,
           whoPlayedId = p1.id,
-          targetPlayerId = p2.id)),
+          targetPlayerId = p2.id))),
       probe.ref)
 
     val updateId1 = probe.expectMsgPF(5.second) {
@@ -92,13 +88,14 @@ class GamePlayActorTest extends FunSuite with BeforeAndAfterAll {
     
     // p2 plays his dc to defend before p1's ac
     gamePlay.tell(
-      PlayedCardRequestMsg(
+      PlayedCardsRequestMsg(
         gamePlayId = gamePlayId,
         updateId = updateId1,
-        played = PlayedCardInTree(
+        playerId = p2.id,
+        played = CardNode(PlayedCardInTree(
           card = dc,
           whoPlayedId = p2.id,
-          targetCardId = ac.id)),
+          parentCardId = ac.id))),
       probe.ref)
       
     val updateId2 = probe.expectMsgPF(1.second) {

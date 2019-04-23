@@ -3,7 +3,7 @@ package game.core
 import Player.PlayerId
 import game.core.Attribute.AttributeTransformer
 
-class Player(val id: PlayerId, val attributes: AttributesSet[PlayerAttribute]) {
+case class Player(val id: PlayerId, val attributes: AttributesSet[PlayerAttribute]) {
   
   def canEqual(a: Any) = a.isInstanceOf[Player]
 
@@ -11,6 +11,8 @@ class Player(val id: PlayerId, val attributes: AttributesSet[PlayerAttribute]) {
     case p: Player => p.canEqual(this) && id == p.id
     case _ => false 
   }
+  
+  override def toString = s"Player(id=$id)"
   
   lazy val hand = attributes.forceGet[Hand]
   

@@ -54,7 +54,8 @@ lazy val server = (project in file("server"))
       "play.server.https.port" -> "9001",
       "play.server.https.idleTimeout" -> "1000s",
       "play.client.https.idleTimeout" -> "1000s",
-      "engineProvider" -> "play.core.server.ssl.DefaultSSLEngineProvider"
+      "play.server.https.engineProvider" -> "play.core.server.ssl.DefaultSSLEngineProvider"
+//       "play.server.https.engineProvider" -> "main.CustomSSLEngineProvider"
     )
   )
   .enablePlugins(PlayScala)

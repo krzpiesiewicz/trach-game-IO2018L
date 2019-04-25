@@ -62,7 +62,20 @@ case class GameStateUpdateMsg(
   msgType: String = "GameStateUpdate",
   gamePlayId: Long,
   updateId: Long,
-  gameState: GameState) extends MsgToClient with GamePlayUpdateMsg
+  gameState: GameState) extends MsgToClient with GamePlayUpdateMsg {
+  
+  def withPlayersNames(names: Map[Int, String]) = GameStateUpdateMsg(
+      msgType,
+      gamePlayId,
+      updateId,
+      gameState.withPlayersNames(names))
+  
+  def presentedToPlayers(playersIds: Set[Int]) = GameStateUpdateMsg(
+      msgType,
+      gamePlayId,
+      updateId,
+      gameState.presentedToPlayers(playersIds))
+}
 
 case class GamePlayResultMsg(
   msgType: String = "GamePlayResult",

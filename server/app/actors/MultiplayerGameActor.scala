@@ -99,9 +99,31 @@ class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec
           case None => {}
         }
     }
+    
+    case msg: GameStateUpdateMsg =>
+      log.debug(s"I got msg from GamePlayActor of type ${msg.msgType}")
+      
+      val playersNames = playersAndDrivers.playersToDrivers.foldLeft[Map[Int, String]](Map.empty) { case (map, (playerId, driver)) =>
+        val nameOpt = driver match {
+          case UserDriver(user, _) => Some(user.username)
+          case _: BotDriver => Some("Server's bot")
+          case _ => None
+        }
+        nameOpt match {
+          case Some(name) => map + (playerId -> name)
+          case None => map
+        }
+      }
+      
+      val msgWithNames = msg.withPlayersNames(playersNames)
+      
+      playersAndDrivers.playersToDrivers.foreach({
+        case (playerId, driver) => sendMsgToPlayerDriver(driver, msgWithNames.presentedToPlayers(Set(playerId)))
+      })
 
     case msg: GamePlayMsg =>
       log.debug(s"I got msg from GamePlayActor of type ${msg.msgType}")
+
       playersAndDrivers.playersToDrivers.foreach({
         case (playerId, driver) => sendMsgToPlayerDriver(driver, msg)
       })

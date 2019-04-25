@@ -48,13 +48,13 @@ lazy val server = (project in file("server"))
     ),
     routesGenerator := play.routes.compiler.InjectedRoutesGenerator,
     PlayKeys.devSettings ++= Seq(
-      "play.server.http.port" -> "disabled",
+      "play.server.http.port" -> "9000",
       "play.server.http.idleTimeout" -> "1000s",
       "play.client.http.idleTimeout" -> "1000s",
       "play.server.https.port" -> "9001",
       "play.server.https.idleTimeout" -> "1000s",
       "play.client.https.idleTimeout" -> "1000s",
-      "play.server.https.engineProvider" -> "play.core.server.ssl.DefaultSSLEngineProvider"
+//       "play.server.https.engineProvider" -> "play.core.server.ssl.DefaultSSLEngineProvider"
 //       "play.server.https.engineProvider" -> "main.CustomSSLEngineProvider"
     )
   )

@@ -5,16 +5,42 @@ import play.api.libs.json.Format._
 import play.api.libs.json.Writes._
 import play.api.libs.json.Reads._
 
-case class Card(id: Int, `type`: String)
+case class Card(id: Int, `type`: String) {
+  
+  def covered = Card(-1, "covered_card")
+}
 
-case class Player(id: Int, name: String, health: Int, hand: Seq[Card], activeCards: Seq[Card])
+case class Player(id: Int, name: String, health: Int, hand: Seq[Card], activeCards: Seq[Card]) {
+  
+  def withName(name: String) = Player(id, name, health, hand, activeCards)
+  
+  def withCoveredHand = Player(id, name, health, hand.map(_.covered), activeCards)
+}
 
 case class GameState(
   players: Seq[Player],
   coveredCardsStack: Seq[Card] = Seq.empty,
   usedCardsStack: Seq[Card] = Seq.empty,
   tableActiveCards: Seq[Card] = Seq.empty,
-  cardTree: Option[CardTree] = None)
+  cardTree: Option[CardTree] = None) {
+  
+  def withPlayersNames(names: Map[Int, String]) = GameState(
+      players.map(p => p.withName(names.get(p.id).get)),
+      coveredCardsStack,
+      usedCardsStack,
+      tableActiveCards,
+      cardTree)
+  
+  /**
+   * Returns the game state with covered hands of all palyers except those with ids from @playersIds.
+   */
+  def presentedToPlayers(playersIds: Set[Int]) = GameState(
+      players.map(p => if (playersIds.contains(p.id)) p else p.withCoveredHand),
+      coveredCardsStack.map(_.covered),
+      usedCardsStack.map(_.covered),
+      tableActiveCards,
+      cardTree)
+}
 
 trait CardTreeOrNode {
   val playedCard: PlayedCard

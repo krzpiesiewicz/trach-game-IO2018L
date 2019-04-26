@@ -40,7 +40,7 @@ case class GameState(
   def presentedToPlayers(playersIds: Set[Int]) = GameState(
       players.map(p => if (playersIds.contains(p.id)) p else p.withCoveredHand),
       coveredCardsStack.map(_.covered),
-      usedCardsStack.map(_.covered),
+      usedCardsStack,
       tableActiveCards,
       cardTree)
 }

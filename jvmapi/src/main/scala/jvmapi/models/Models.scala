@@ -25,7 +25,10 @@ case class GameState(
   cardTree: Option[CardTree] = None) {
   
   def withPlayersNames(names: Map[Int, String]) = GameState(
-      players.map(p => p.withName(names.get(p.id).get)),
+      players.map(p => names.get(p.id) match {
+        case Some(name) => p.withName(name)
+        case None => p
+      }),
       coveredCardsStack,
       usedCardsStack,
       tableActiveCards,

@@ -1,0 +1,40 @@
+body {
+    width: 100vw;
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 75% auto;
+    grid-template-rows: 75% auto;
+    overflow: hidden;
+}
+
+#tableView {
+    grid-column-start: 1;
+    grid-row-start: 1;
+    background-color: aquamarine;
+}
+
+#statsView {
+    grid-column-start: 2;
+    grid-row-start: 1;
+    background-color: bisque;
+}
+
+#playerMeView {
+    grid-column-start: 1;
+    grid-row-start: 2;
+    background-color: lightpink;
+    display: flex;
+    flex-direction: row;
+}
+
+#infoView {
+    grid-column-start: 2;
+    grid-row-start: 2;
+    background-color: lightgreen;
+}
+
+.handCard {
+    margin: 30px;
+    width: 100px;
+    height: 200px;
+}

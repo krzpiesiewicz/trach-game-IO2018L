@@ -65,5 +65,7 @@ object DefaultAttributes {
 
   case class DefaultRoundsManager(val currentPlayer: Player) extends RoundsManager {
     def nextPlayer(circleOfPlayers: CircleOfPlayers) = circleOfPlayers.nextTo(currentPlayer)
+    
+    def withNextRound(circleOfPlayers: CircleOfPlayers) = DefaultRoundsManager(nextPlayer(circleOfPlayers))
   }
 }

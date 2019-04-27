@@ -38,6 +38,13 @@ trait GameState {
    * Returns a new gamestate with attributes transformed by given transformer.
    */
   def transformed(transformer: AttributeTransformer[GlobalAttribute]): GameState
+  
+  /**
+   * Returns a state with the next round (the round of the next player).
+   */
+  def withNextRound: GameState = this transformed {
+    case rm: RoundsManager => rm.withNextRound(attributes.forceGet[Players].circleOfPlayers)
+  }
 }
 
 case class NormalState(override val attributes: AttributesSet[GlobalAttribute]) extends GameState {

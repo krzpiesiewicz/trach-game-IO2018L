@@ -60,7 +60,7 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
 
     {
       case TimeToEvaluate(`updateId`) =>
-        val state = table.evaluate
+        val state = table.evaluate.withNextRound
         context.become(checkForStartingCardRequest(state, updateId + 1))
 
       case msg: GamePlayMsg => if (msg.gamePlayId == gamePlayId) msg match {

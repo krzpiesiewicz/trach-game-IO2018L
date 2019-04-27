@@ -17,17 +17,13 @@ function checkTargetable(type) {
     // return false;
 }
 
-
-function displayInit() {
-    $("#beginAction").hide();
-
+function addDroppable() {
     $(".playHere").droppable({
         drop: function(event, ui) {
             var thrownIdx = ui.draggable.attr("data-card-idx");
-            var atId = $(this).attr("data-drop-id");
+            var atId = parseInt($(this).attr("data-drop-id"));
             var thrownCard = getCardByIdx(thrownIdx);
             var isTargetable = checkTargetable(thrownCard.type);
-            console.log(isTargetable);
             if (isTargetable) {
                 handleTargetableRequest(thrownCard, atId);
             } else {
@@ -35,8 +31,12 @@ function displayInit() {
             }
         }
     });
+}
 
+function displayInit() {
+    $("#beginAction").hide();
     $("#targetChooser").hide();
+    addDroppable();
 }
 
 function handleTargetableRequest(thrownCard, atId) {
@@ -52,12 +52,20 @@ function handleTargetableRequest(thrownCard, atId) {
 }
 
 function updateView() {
-    if (gameState.tableActiveCards.length == 0 &&
+    $("#tree").hide();
+    if (!('cardTree' in gameState) &&
         gameState.playerIdOnMove == myPlayerId) {
         $("#beginAction").show();
     } else {
         $("#beginAction").hide();
     }
+
+    if ('cardTree' in gameState) {
+        $("#tree").html("");
+        $("#tree").show();
+        buildTree(gameState.cardTree, $("#tree"), "#ffff00");
+    }
+
     addPlayersStats(gameState.players);
     addHandCards(gameState.players[myPlayerId - 1].hand);
     addTargets(gameState.players);
@@ -94,18 +102,29 @@ function addHandCards(cards) {
 }
 
 function buildTree(node, div, color) {
-    div.addClass("node");
     div.css("background-color", color);
+    div.append('<div class="cardContainer"></div>')
+    displayCard(node.playedCard, div.children().last(), color);
 
-    newDiv = displayCard(node.playedCard, div, color);
-    newColor = lightenDarkenColor(color, 40); //TODO
+    var newColor = lightenDarkenColor(color, -30); //TODO
+    div.append('<div class="childrenContainer"></div>');
+    var childrenContainer = div.children().last();
+
     node.childrenNodes.forEach(function(child) {
+        childrenContainer.append('<div class="node"></div>');
+        newDiv = childrenContainer.children().last();
         buildTree(child, newDiv, newColor);
     });
+
+    addDroppable();
 }
 
-function displayCard(card, div, color) {
-    //html = "div"
+function displayCard(playedCard, div, color) {
+    card = playedCard.card;
+    html = '<span class="playerId"></span>';
+    html += '<img class="imgAtTable playHere" data-drop-id="' + card.id + '" src="cards/' + card.type + '.jpg">';
+    html += '<span class="playerId"></span>';
+    div.append(html);
 
 }
 
@@ -182,5 +201,5 @@ var treeTest = {
 };
 
 function doTestTree() {
-    buildTree(treeTest, $("body"), "#ffff00");
+    buildTree(treeTest, $("#tree"), "#ffff00");
 }

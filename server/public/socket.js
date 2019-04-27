@@ -30,7 +30,7 @@ function onClose(evt) {
 function onMessage(evt) {
     msg = JSON.parse(evt.data);
     console.log(msg);
-    if (msg.msgType == "GamePlayStateUpdate") {
+    if (msg.msgType == "GamePlayInfoUpdate") {
         myPlayerId = msg.playerId;
         gamePlayId = msg.gamePlayId;
     }

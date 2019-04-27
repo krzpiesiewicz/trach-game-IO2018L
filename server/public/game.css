@@ -1,3 +1,45 @@
+#tree {
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    justify-content: space-evenly;
+    padding: 10px;
+    border-radius: 15px;
+}
+
+.node {
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    justify-content: space-evenly;
+    padding: 10px;
+    border-radius: 15px;
+    margin: 10px;
+}
+
+.cardContainer {
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    justify-content: space-evenly;
+    padding: 10px;
+}
+
+.childrenContainer {
+    margin: auto;
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    justify-content: space-evenly;
+}
+
+.imgAtTable {
+    height: 100px;
+    width: 60px;
+}
+
 body {
     width: 100vw;
     height: 100vh;
@@ -11,6 +53,9 @@ body {
     grid-column-start: 1;
     grid-row-start: 1;
     background-color: aquamarine;
+    display: flex;
+    align-content: center;
+    justify-content: space-evenly;
 }
 
 #statsView {

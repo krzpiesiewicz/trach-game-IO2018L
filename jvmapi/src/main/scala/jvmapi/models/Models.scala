@@ -22,7 +22,9 @@ case class GameState(
   coveredCardsStack: Seq[Card] = Seq.empty,
   usedCardsStack: Seq[Card] = Seq.empty,
   tableActiveCards: Seq[Card] = Seq.empty,
-  cardTree: Option[CardTree] = None) {
+  cardTree: Option[CardTree] = None,
+  roundId: Int,
+  playerIdOnMove: Int) {
   
   def withPlayersNames(names: Map[Int, String]) = GameState(
       players.map(p => names.get(p.id) match {
@@ -32,7 +34,9 @@ case class GameState(
       coveredCardsStack,
       usedCardsStack,
       tableActiveCards,
-      cardTree)
+      cardTree,
+      roundId,
+      playerIdOnMove)
   
   /**
    * Returns the game state with covered hands of all palyers except those with ids from @playersIds.
@@ -40,9 +44,11 @@ case class GameState(
   def presentedToPlayers(playersIds: Set[Int]) = GameState(
       players.map(p => if (playersIds.contains(p.id)) p else p.withCoveredHand),
       coveredCardsStack.map(_.covered),
-      usedCardsStack.map(_.covered),
+      usedCardsStack,
       tableActiveCards,
-      cardTree)
+      cardTree,
+      roundId,
+      playerIdOnMove)
 }
 
 trait CardTreeOrNode {

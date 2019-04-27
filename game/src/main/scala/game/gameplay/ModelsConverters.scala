@@ -61,7 +61,9 @@ package object modelsconverters {
         case _ => None
       }
       case _ => None
-    })
+    },
+    state.roundsManager.roundId,
+    state.roundsManager.currentPlayer.id)
 
   implicit def toGameStateModel(state: game.core.GameState): GameState = toGameStateModel(state, None)
 

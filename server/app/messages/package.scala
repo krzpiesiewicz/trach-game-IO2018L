@@ -37,7 +37,7 @@ package object messages {
   // messages to client:
     
   case class GamePlayInfoUpdateMsg(
-    msgType: String = "GamePlayStateUpdate",
+    msgType: String = "GamePlayInfoUpdate",
     gamePlayId: Long,
     playerId: Int,
     gamePlayState: GamePlayState)

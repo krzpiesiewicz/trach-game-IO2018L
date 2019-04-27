@@ -73,6 +73,8 @@ trait Players extends GlobalAttribute {
 }
 
 trait RoundsManager extends GlobalAttribute {
+  def roundId: Int
+  
   def currentPlayer: Player
   def nextPlayer(circleOfPlayers: CircleOfPlayers): Player
   

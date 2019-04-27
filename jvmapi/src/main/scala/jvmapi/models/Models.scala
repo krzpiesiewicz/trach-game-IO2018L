@@ -23,6 +23,7 @@ case class GameState(
   usedCardsStack: Seq[Card] = Seq.empty,
   tableActiveCards: Seq[Card] = Seq.empty,
   cardTree: Option[CardTree] = None,
+  roundId: Int,
   playerIdOnMove: Int) {
   
   def withPlayersNames(names: Map[Int, String]) = GameState(
@@ -34,6 +35,7 @@ case class GameState(
       usedCardsStack,
       tableActiveCards,
       cardTree,
+      roundId,
       playerIdOnMove)
   
   /**
@@ -45,6 +47,7 @@ case class GameState(
       usedCardsStack,
       tableActiveCards,
       cardTree,
+      roundId,
       playerIdOnMove)
 }
 

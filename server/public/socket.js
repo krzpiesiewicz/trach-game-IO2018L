@@ -1,7 +1,8 @@
-var wsUri = "wss://localhost:9001/ws";
+var wsUri = "ws://localhost:9000/ws";
 var websocket;
 
 function init() {
+    displayInit();
     websocket = new WebSocket(wsUri);
     websocket.onopen = function(evt) {
         onOpen(evt)
@@ -31,8 +32,10 @@ function onMessage(evt) {
     console.log(msg);
     if (msg.msgType == "GamePlayStateUpdate") {
         myPlayerId = msg.playerId;
+        gamePlayId = msg.gamePlayId;
     }
     if (msg.msgType == "GameStateUpdate") {
+        updateId = msg.updateId;
         handleGameStateUpdate(msg.gameState);
     }
 }
@@ -42,13 +45,46 @@ function onError(evt) {
 }
 
 function doSend(message) {
-    console.log("SENT: " + message);
+    console.log("SENT: ");
+    console.log(JSON.parse(message));
     websocket.send(message);
 }
 
 window.addEventListener("load", init, false);
 
-function handleGameStateUpdate(gameState) {
-    addPlayersStats(gameState.players);
-    addHandCards(gameState.players[myPlayerId - 1].hand);
+function handleGameStateUpdate(gs) {
+    gameState = gs;
+    updateView();
+}
+
+function sendPlayedRequest(thrownCard, parentId, targetId) {
+    var msg = {
+        msgType: "PlayedCardsRequest",
+        gamePlayId: gamePlayId,
+        playerId: myPlayerId,
+        updateId: updateId,
+        played: {
+            playedCard: {
+                card: thrownCard,
+                whoPlayedId: myPlayerId
+            },
+            childrenNodes: []
+        }
+
+    };
+    if (parentId == -1) {
+        msg.played.playedCard.type = "PlayedStartingCardAtPlayer";
+        msg.played.playedCard.targetPlayerId = targetId;
+    } else {
+        msg.played.playedCard.type = "PlayedCardInTree";
+        msg.played.playedCard.parentCardId = parentId;
+    }
+    doSend(JSON.stringify(msg));
+}
+
+
+//HELPERS
+
+function getCardByIdx(idx) {
+    return gameState.players[myPlayerId - 1].hand[idx];
 }

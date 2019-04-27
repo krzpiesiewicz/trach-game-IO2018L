@@ -36,5 +36,30 @@ body {
 .handCard {
     margin: 30px;
     width: 100px;
-    height: 200px;
+    height: 175px;
+}
+
+#beginAction {
+    width: 200px;
+    height: 350px;
+    margin: auto;
+    margin-top: 80px;
+    background-color: brown;
+    text-align: center;
+    color: white;
+    border-radius: 20px;
+    padding: 10px;
+}
+
+#targetChooser {
+    position: absolute;
+    top: 300px;
+    min-height: 400px;
+    min-width: 200px;
+    margin: auto;
+    background-color: lightcoral;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-content: center;
 }

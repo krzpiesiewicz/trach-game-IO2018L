@@ -105,7 +105,7 @@ class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec
     }
     
     case msg: GameStateUpdateMsg =>
-      log.debug(s"I got msg from GamePlayActor of type ${msg.msgType}")
+      log.debug(s"I got msg from GamePlayActor of type ${msg.msgType}:\n$msg\n")
       
       val playersNames = playersAndDrivers.playersToDrivers.foldLeft[Map[Int, String]](Map.empty) { case (map, (playerId, driver)) =>
         val nameOpt = driver match {

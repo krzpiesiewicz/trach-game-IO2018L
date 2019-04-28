@@ -94,13 +94,16 @@ class ClientActor(out: ActorRef, gamesManager: ActorRef, user: User) extends Act
   // helper methods
 
   private def receiveMsgFromClient(fromClientReceive: PartialFunction[MsgFromClient, Unit]): Receive = {
-    case json: JsValue => msgFromClientReads.reads(json) match {
+    case json: JsValue =>
+      log.debug(s"Received json from client: $json")
+      msgFromClientReads.reads(json) match {
       case JsSuccess(msg: MsgFromClient, _) =>
-        log.debug(msg.toString())
+        log.debug(s"Json parsed as $msg")
         if (fromClientReceive.isDefinedAt(msg))
           fromClientReceive.apply(msg)
 //        fromClientReceive.applyOrElse(msg, _: MsgFromClient => {})
-      case _ => { /*wrong json message*/ }
+      case _ => /*wrong json message*/ 
+        log.debug("Wrong json message format")
     }
   }
 

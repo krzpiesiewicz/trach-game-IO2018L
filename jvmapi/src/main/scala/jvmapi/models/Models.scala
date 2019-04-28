@@ -122,7 +122,7 @@ object PlayedCard {
       case JsString(typeName) => typeName match {
         case "PlayedStartingCardAtPlayer" => playedStartingCardAtPlayerFormat.reads(json)
         case "PlayedStartingCardAtCard" => playedStartingCardAtCardFormat.reads(json)
-        case "PlayedStartingCardInTree" => playedCardInTreeFormat.reads(json)
+        case "PlayedCardInTree" => playedCardInTreeFormat.reads(json)
         case _ => JsError(s"""unknown type "$typeName"""")
       }
       case _ => JsError("""no "type" field""")

@@ -1,5 +1,7 @@
 package game.core
 
+import game.Logging.logger
+
 import game.core.actions._
 
 /**
@@ -16,6 +18,7 @@ case class Table(val state: GameState, val tree: TreeOfCards = EmptyTree) {
     val notAttached: (Table, Boolean) = (this, false)
     try {
       val newTree = tree.attachSubtree(cn)
+//      logger.debug(newTree.toString())
       val newState = cn.playedCards.foldLeft(state) {
         (state, pc) => GameState.removeCardFromPlayersHand(pc.player, pc.card, state)
       }
@@ -48,18 +51,21 @@ case class Table(val state: GameState, val tree: TreeOfCards = EmptyTree) {
     def evalTree(node: CardInnerNode, isNodeOfAddedSubtree: Boolean): Option[ActionTransformer] = {
       node.transformerBuilder(state) match {
         case Some(transformer) =>
-          val childrenTransformers = node.children.map { child => evalTree(child, isNodeOfAddedSubtree || isRootOfAddedSubtree(child)) }
+          val childrenAndTransformersOpts = node.children.map { child =>
+            val childTransformerOpt = evalTree(child, isNodeOfAddedSubtree || isRootOfAddedSubtree(child))
+            (child, childTransformerOpt)
+            }
 
           // transform the parent by all the children transformers.
-          val newTransformer = childrenTransformers.foldLeft(transformer) {
-            case (parentTransformer: ActionTransformer, childTransformerOpt: Option[ActionTransformer]) =>
+          val newTransformer = childrenAndTransformersOpts.foldLeft(transformer) {
+            case (parentTransformer: ActionTransformer, (child: CardInnerNode, childTransformerOpt: Option[ActionTransformer])) =>
               childTransformerOpt match {
                 case Some(childTransformer) =>
                   // check if childTransformer is applicable to the parent.
                   childTransformer.transform(parentTransformer) match {
                     case Some(transformer) => transformer
                     case None =>
-                      if (isNodeOfAddedSubtree)
+                      if (isNodeOfAddedSubtree || isRootOfAddedSubtree(child))
                         throw new Exception("Child's transformer not applicable to the parent's transformer")
                       parentTransformer
                   }

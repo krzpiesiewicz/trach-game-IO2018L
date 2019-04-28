@@ -52,4 +52,40 @@ class TableTest extends FunSuite {
     val state7e = table7.evaluate
     assert(state7e.player(p2).health.value == p2.health.value)
   }
+  
+  test("Table test - attack, defence and priority_inc to defence") {
+    import DafaultData.multiplayerTemporaryData._
+    
+    // p1 plays his ac at p2
+    val (table2, attached2) = table.attach(TreeWithCards(PlayedCardAtPlayer(ac, p1, p2)))
+    assert(attached2)
+    
+    // p2 plays his dc at ac in response
+    val (table3, attached3) = table2.attach(CardInnerNode(PlayedCardInTree(dc, p2, ac)))
+    assert(attached3)
+    
+    // p2 plays his pic at dc to increase priority of defence
+    val (table4, attached4) = table3.attach(CardInnerNode(PlayedCardInTree(pic, p2, dc)))
+    assert(attached4)
+    
+//    logger.debug(table4.tree.toString() + "\n")
+  }
+  
+  test("Table test - attack, priority_inc to attack and cannot defence to priority_inc") {
+    import DafaultData.multiplayerTemporaryData._
+    
+    // p1 plays his ac at p2
+    val (table2, attached2) = table.attach(TreeWithCards(PlayedCardAtPlayer(ac, p1, p2)))
+    assert(attached2)
+    
+    // p2 plays pic at ac to increase priority of attack
+    val (table3, attached3) = table2.attach(CardInnerNode(PlayedCardInTree(pic, p2, ac)))
+    assert(attached3)
+    
+    // p2 cannot play dc at pic
+    val (table4, attached4) = table3.attach(CardInnerNode(PlayedCardInTree(dc, p2, pic)))
+    assert(!attached4)
+    
+    logger.debug(table4.tree.toString() + "\n")
+  }
 }

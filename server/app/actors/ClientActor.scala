@@ -1,7 +1,7 @@
 package actors
 
 import akka.actor._
-import akka.event.Logging
+import akka.event.{Logging, DiagnosticLoggingAdapter}
 
 import play.api.libs.json._
 import play.api.libs.json.JsValue
@@ -19,9 +19,12 @@ import actors.MultiplayerGameActor.EnterGame
 
 class ClientActor(out: ActorRef, gamesManager: ActorRef, user: User) extends Actor with ActorLogging {
 
+  override val log: DiagnosticLoggingAdapter = Logging(this)
+  
   val userDriver = UserDriver(user, self)
   
   override def preStart() = {
+    log.mdc(Map("actorSufix" -> s"[userId=${user.userId}]"))
   }
   
   override def postStop() = {
@@ -82,20 +85,25 @@ class ClientActor(out: ActorRef, gamesManager: ActorRef, user: User) extends Act
     case _: QuickMultiplayerGameRequestMsg =>
       game ! MsgFromPlayerDriver(userDriver, GamePlayInfoRequestMsg(gamePlayId = gamePlayId))
     // game actor services GamePlayMsg
-    case msg: GamePlayMsg => game ! MsgFromPlayerDriver(userDriver, msg)
+    case msg: GamePlayMsg =>
+      log.debug("I received msg from client: " + msg)
+      game ! MsgFromPlayerDriver(userDriver, msg)
   })
     .orElse(transmitMsgToUser)
 
   // helper methods
 
   private def receiveMsgFromClient(fromClientReceive: PartialFunction[MsgFromClient, Unit]): Receive = {
-    case json: JsValue => msgFromClientReads.reads(json) match {
+    case json: JsValue =>
+      log.debug(s"Received json from client: $json")
+      msgFromClientReads.reads(json) match {
       case JsSuccess(msg: MsgFromClient, _) =>
-        log.debug(msg.toString())
+        log.debug(s"Json parsed as $msg")
         if (fromClientReceive.isDefinedAt(msg))
           fromClientReceive.apply(msg)
 //        fromClientReceive.applyOrElse(msg, _: MsgFromClient => {})
-      case _ => { /*wrong json message*/ }
+      case _ => /*wrong json message*/ 
+        log.debug("Wrong json message format")
     }
   }
 
@@ -110,7 +118,11 @@ class ClientActor(out: ActorRef, gamesManager: ActorRef, user: User) extends Act
     case MsgToUser(`user`, msg: MsgToClient) => sendToClient(msg)
   }
   
-  def sendToClient[T](msg: T)(implicit wr: Writes[T]) = out ! Json.toJson(msg)
+  def sendToClient[T](msg: T)(implicit wr: Writes[T]) = {
+    val json = Json.toJson(msg)
+    log.debug(s"sening json to client: $json")
+    out ! json
+  }
 }
 
 object ClientActor {

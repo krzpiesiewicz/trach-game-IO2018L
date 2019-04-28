@@ -1,19 +1,23 @@
 package jvmapi.models
 
+import scala.language.implicitConversions
+
+import java.time.{ ZonedDateTime, ZoneId }
+
 import play.api.libs.json._
 import play.api.libs.json.Format._
 import play.api.libs.json.Writes._
 import play.api.libs.json.Reads._
 
 case class Card(id: Int, `type`: String) {
-  
+
   def covered = Card(-1, "covered_card")
 }
 
 case class Player(id: Int, name: String, health: Int, hand: Seq[Card], activeCards: Seq[Card]) {
-  
+
   def withName(name: String) = Player(id, name, health, hand, activeCards)
-  
+
   def withCoveredHand = Player(id, name, health, hand.map(_.covered), activeCards)
 }
 
@@ -25,30 +29,30 @@ case class GameState(
   cardTree: Option[CardTree] = None,
   roundId: Int,
   playerIdOnMove: Int) {
-  
+
   def withPlayersNames(names: Map[Int, String]) = GameState(
-      players.map(p => names.get(p.id) match {
-        case Some(name) => p.withName(name)
-        case None => p
-      }),
-      coveredCardsStack,
-      usedCardsStack,
-      tableActiveCards,
-      cardTree,
-      roundId,
-      playerIdOnMove)
-  
+    players.map(p => names.get(p.id) match {
+      case Some(name) => p.withName(name)
+      case None => p
+    }),
+    coveredCardsStack,
+    usedCardsStack,
+    tableActiveCards,
+    cardTree,
+    roundId,
+    playerIdOnMove)
+
   /**
    * Returns the game state with covered hands of all palyers except those with ids from @playersIds.
    */
   def presentedToPlayers(playersIds: Set[Int]) = GameState(
-      players.map(p => if (playersIds.contains(p.id)) p else p.withCoveredHand),
-      coveredCardsStack.map(_.covered),
-      usedCardsStack,
-      tableActiveCards,
-      cardTree,
-      roundId,
-      playerIdOnMove)
+    players.map(p => if (playersIds.contains(p.id)) p else p.withCoveredHand),
+    coveredCardsStack.map(_.covered),
+    usedCardsStack,
+    tableActiveCards,
+    cardTree,
+    roundId,
+    playerIdOnMove)
 }
 
 trait CardTreeOrNode {
@@ -97,7 +101,7 @@ object Player {
 object PlayedStartingCardAtPlayer {
   implicit val playedStartingCardAtPlayerFormat = Json.format[PlayedStartingCardAtPlayer]
 }
- 
+
 object PlayedStartingCardAtCard {
   implicit val playedStartingCardAtCardFormat = Json.format[PlayedStartingCardAtCard]
 }
@@ -110,7 +114,7 @@ object PlayedCard {
   import PlayedStartingCardAtPlayer._
   import PlayedStartingCardAtCard._
   import PlayedCardInTree._
-  
+
   implicit object playedCardFormat extends Format[PlayedCard] {
     def writes(psc: PlayedCard) = psc match {
       case pca: PlayedStartingCardAtPlayer => playedStartingCardAtPlayerFormat.writes(pca)
@@ -122,7 +126,7 @@ object PlayedCard {
       case JsString(typeName) => typeName match {
         case "PlayedStartingCardAtPlayer" => playedStartingCardAtPlayerFormat.reads(json)
         case "PlayedStartingCardAtCard" => playedStartingCardAtCardFormat.reads(json)
-        case "PlayedStartingCardInTree" => playedCardInTreeFormat.reads(json)
+        case "PlayedCardInTree" => playedCardInTreeFormat.reads(json)
         case _ => JsError(s"""unknown type "$typeName"""")
       }
       case _ => JsError("""no "type" field""")
@@ -132,7 +136,7 @@ object PlayedCard {
 
 object PlayedStartingCard {
   import PlayedCard._
-  
+
   implicit object playedStartingCardFormat extends Format[PlayedStartingCard] {
     def writes(psc: PlayedStartingCard) = playedCardFormat.writes(psc)
 
@@ -165,6 +169,37 @@ object CardTreeOrNode {
   }
 
   def unapply(node: CardTreeOrNode): Option[(PlayedCard, Seq[CardNode])] = Some((node.playedCard, node.childrenNodes))
-  
+
   implicit val cardTreeOrNodeFormat = Json.format[CardTreeOrNode]
+}
+
+class DateTime(val zdt: ZonedDateTime)
+
+object DateTime {
+
+  implicit def toZonedDateTime(dt: DateTime) = dt.zdt
+
+  implicit def apply(zdt: ZonedDateTime) = new DateTime(zdt)
+
+  implicit object dateTimeFormat extends Format[DateTime] {
+
+    def writes(dt: DateTime): JsValue = {
+      val utc = dt.zdt.withZoneSameInstant(ZoneId.of("UTC"))
+      JsString(f"${utc.getYear}%04d-${utc.getMonthValue}%02d-${utc.getDayOfMonth}%02d ${utc.getHour}%02d:${utc.getMinute}%02d:${utc.getSecond}%02d")
+    }
+
+    def reads(json: JsValue): JsResult[DateTime] = {
+      val regex = """dddd-dd-dd dd:dd:dd""".r
+      val datestr = json.toString
+      datestr match {
+        case regex(year, month, day, hour, minute, second) =>
+          try {
+            JsSuccess(ZonedDateTime.of(year.toInt, month.toInt, day.toInt, hour.toInt, minute.toInt, second.toInt, /*nanos:*/ 0, ZoneId.of("UTC")))
+          } catch {
+            case e: Exception => JsError(s"cannot create java.time.ZonedDateTime with UTC from $datestr")
+          }
+        case _ => JsError(s"$datestr does not match ${regex.pattern}")
+      }
+    }
+  }
 }

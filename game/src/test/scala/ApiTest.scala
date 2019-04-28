@@ -33,7 +33,9 @@ class ApiTest extends FunSuite {
 |  ],
 |  "coveredCardsStack":[{"id":6,"type":"shelter"}],
 |  "usedCardsStack":[],
-|  "tableActiveCards":[]
+|  "tableActiveCards":[],
+|  "roundId":1,
+|  "playerIdOnMove":1
 |}""".stripMargin)
 
     assert(json == gameStateJson)
@@ -58,7 +60,9 @@ class ApiTest extends FunSuite {
 |  "cardTree": {
 |    "playedCard": {"type":"PlayedStartingCardAtPlayer","card":{"id":1,"type":"attack"},"whoPlayedId":1,"targetPlayerId":2},
 |    "childrenNodes": []
-|  }
+|  },
+|  "roundId":1,
+|  "playerIdOnMove":1
 |}""".stripMargin)
 
     val fromJson1 = Json.fromJson[GameState](json1)
@@ -86,7 +90,9 @@ class ApiTest extends FunSuite {
 |    "childrenNodes": [
 |      {"playedCard":{"type":"PlayedCardInTree","card":{"id":4,"type":"priority_inc"},"whoPlayedId":1,"parentCardId":1},"childrenNodes":[]}
 |    ]
-|  }
+|  },
+|  "roundId":1,
+|  "playerIdOnMove":1
 |}""".stripMargin)
 
     assert(json2 == gameStateJson2)

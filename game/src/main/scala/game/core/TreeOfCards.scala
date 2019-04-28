@@ -1,5 +1,7 @@
 package game.core
 
+import game.Logging.logger
+
 import game.core.actions._
 
 /**
@@ -37,13 +39,14 @@ trait CardNode {
      * Otherwise it returns (false, @node).
      */
     def mapTree[CN <: CardNode](node: CN): (Boolean, node.N) = {
-      if (node.playedCard.card == subtree.playedCard.parentCard)
-        (true, node.withChildren(children :+ subtree))
+      if (node.playedCard.card == subtree.playedCard.parentCard) {
+        (true, node.withChildren(node.children :+ subtree))
+      }
       else {
         val (attached, newChildren) = node.children.foldLeft[(Boolean, Seq[CardInnerNode])](false, Seq.empty) {
-          case ((prevAttached, childrenBuf), child) =>
-            val (attached, node) = mapTree(child)
-            (prevAttached || attached, childrenBuf :+ node)
+          case ((prevAttached, newChildrenBuf), child) =>
+            val (childAttached, newChild) = mapTree(child)
+            (prevAttached || childAttached, newChildrenBuf :+ newChild)
         }
         val newNode = node.withChildren(newChildren)
         (attached, newNode)

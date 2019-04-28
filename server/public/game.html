@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Trach Game</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='game.css'>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src='display.js'></script>
+    <script src='socket.js'></script>
+</head>
+
+<body>
+    <div id="targetChooser"></div>
+    <div id="tableView">
+        <!--Aktualne drzewo kart-->
+        <div class="playHere" data-drop-id="-1" id="beginAction"> Tu zagraj kartę!</div>
+        <div id="tree"></div>
+    </div>
+    <div id="statsView">
+        <!--Lista graczy wraz z liczbą żyć-->
+    </div>
+    <div id="infoView">
+        <!--Jakim jestem graczem-->
+    </div>
+    <div id="playerMeView">
+        <!--Karty na ręce ułożone we felexie-->
+    </div>
+</body>
+
+</html>

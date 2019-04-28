@@ -16,10 +16,11 @@ lazy val game = (project in file("game"))
   .settings(
     libraryDependencies ++= Seq(
       "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
-      "ch.qos.logback" % "logback-classic" % "1.2.3",
+      logbackClassic,
       guice,
       akkaActor,
       akkaTestKit,
+      akkaSlf4j,
       playJson,
     )
   ).dependsOn(jvmapi)
@@ -30,6 +31,8 @@ lazy val bot = (project in file("bot"))
     libraryDependencies ++= Seq(
       akkaActor,
       akkaTestKit,
+      akkaSlf4j,
+      logbackClassic,
       "junit" % "junit" % "4.12" % Test,
       "com.novocode" % "junit-interface" % "0.11" % Test exclude("junit", "junit-dep")
     )
@@ -45,6 +48,8 @@ lazy val server = (project in file("server"))
         macwireUtil,
         macwireProxy,
         playJson,
+        logbackClassic,
+        akkaSlf4j
     ),
     routesGenerator := play.routes.compiler.InjectedRoutesGenerator,
     PlayKeys.devSettings ++= Seq(
@@ -54,6 +59,7 @@ lazy val server = (project in file("server"))
       "play.server.https.port" -> "9001",
       "play.server.https.idleTimeout" -> "1000s",
       "play.client.https.idleTimeout" -> "1000s",
+      "akka.receive" -> "on",
 //       "play.server.https.engineProvider" -> "play.core.server.ssl.DefaultSSLEngineProvider"
 //       "play.server.https.engineProvider" -> "main.CustomSSLEngineProvider"
     )
@@ -71,6 +77,8 @@ lazy val commonSettings = Seq(
 lazy val akkaVersion = "2.5.19"
 lazy val akkaActor = "com.typesafe.akka" %% "akka-actor" % akkaVersion
 lazy val akkaTestKit = "com.typesafe.akka" %% "akka-testkit" % akkaVersion
+lazy val akkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % akkaVersion
+lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.2.3"
 
 lazy val playJson = "com.typesafe.play" %% "play-json" % "2.7.3"
 

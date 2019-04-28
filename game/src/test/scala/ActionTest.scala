@@ -87,4 +87,20 @@ class ActionTest extends FunSuite {
     val defOpt1 = defence.transform(attack)
     assert(defOpt1.isDefined)
   }
+  
+  test("Wrong actions - cannot play defence transformer on priority transformer") {
+    import data._
+    
+    val priorityOpt = buildersFactory.createTransformerBuilder(new PlayedCardInTree(pic, p2, ac))(state)
+    val defenceOpt = buildersFactory.createTransformerBuilder(new PlayedCardInTree(dc, p2, pic))(state)
+    
+    assert(priorityOpt.isDefined)
+    assert(defenceOpt.isDefined)
+    
+    val priority = priorityOpt.get
+    val defence = defenceOpt.get
+    
+    val wrongOpt = defence.transform(priority)
+    assert(wrongOpt.isEmpty)
+  }
 }

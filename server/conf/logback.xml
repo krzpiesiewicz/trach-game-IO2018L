@@ -1,0 +1,35 @@
+<configuration>
+
+  <conversionRule conversionWord="coloredLevel" converterClass="play.api.libs.logback.ColoredLevel"/>
+       
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%coloredLevel %green(%date{ISO8601}) %red(%logger{0}%X{actorSufix}): %message%n%xException{10}</pattern>
+    </encoder>
+  </appender>
+  
+<!--   Options: OFF, ERROR, WARNING, INFO, DEBUG -->
+  <logger name="play" level="INFO">
+    <appender-ref ref="STDOUT"/>
+  </logger>
+  <logger name="application" level="DEBUG"/>
+  
+  <logger name="akka" level="DEBUG"/>
+  
+  <logger name="actors.ClientActor" level="DEBUG"/>
+
+  <logger name="actors.GamesManagerActor" level="DEBUG"/>
+  
+  <logger name="actors.MultiplayerGameActor" level="DEBUG"/>
+  
+  <logger name="game.gameplay.GamePlayActor" level="DEBUG"/>
+  
+  <root level="INFO">
+    <appender-ref ref="STDOUT"/>
+  </root>
+  
+  <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF"/>
+  <!-- https://hibernate.atlassian.net/browse/HV-1323 -->
+  <logger name="org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator" level="ERROR"/>
+
+</configuration>

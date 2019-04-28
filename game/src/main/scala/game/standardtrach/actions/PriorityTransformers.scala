@@ -27,12 +27,12 @@ class PriorityIncrementer(pcit: PlayedCardInTree[PriorityIncrementerCard])(impli
   extends ActionCardTransformer[PriorityIncrementerCard, PlayedCardInTree[PriorityIncrementerCard]] {
 
   def transform(action: Action) = action match {
-    case action: ActionWithPriority => Some(action.withPriority(action.priority - 1))
+    case action: ActionWithPriority => Some(action.withPriority(action.priority - 2))
     case _ => None
   }
 
   def transform(transformer: ActionTransformer) = transformer match {
-    case transformer: ActionTransformerWithPriority => Some(transformer.withPriority(transformer.priority - 1))
+    case transformer: ActionTransformerWithPriority => Some(transformer.withPriority(transformer.priority - 2))
     case _ => None
   }
 }

@@ -4,6 +4,7 @@ import play.api.libs.json._
 import play.api.libs.json.Format._
 
 import jvmapi.models._
+import java.time.ZonedDateTime
 
 trait Msg {
   val msgType: String
@@ -62,29 +63,33 @@ case class GameStateUpdateMsg(
   msgType: String = "GameStateUpdate",
   gamePlayId: Long,
   updateId: Long,
-  gameState: GameState) extends MsgToClient with GamePlayUpdateMsg {
-  
+  gameState: GameState,
+  timeOfCommingEvaluation: Option[DateTime]) extends MsgToClient with GamePlayUpdateMsg {
+
   def withPlayersNames(names: Map[Int, String]) = GameStateUpdateMsg(
-      msgType,
-      gamePlayId,
-      updateId,
-      gameState.withPlayersNames(names))
-  
+    msgType,
+    gamePlayId,
+    updateId,
+    gameState.withPlayersNames(names),
+    timeOfCommingEvaluation)
+
   def presentedToPlayers(playersIds: Set[Int]) = GameStateUpdateMsg(
-      msgType,
-      gamePlayId,
-      updateId,
-      gameState.presentedToPlayers(playersIds))
+    msgType,
+    gamePlayId,
+    updateId,
+    gameState.presentedToPlayers(playersIds),
+    timeOfCommingEvaluation)
 }
 
 case class GamePlayResultMsg(
   msgType: String = "GamePlayResult",
   gamePlayId: Long,
   winnerId: Int) extends MsgToClient with GamePlayMsg
-  
+
 object GameStateRequestMsg {
   implicit val gameStateRequestMsgFormat = Json.format[GameStateRequestMsg]
 }
+
 object GameStateUpdateMsg {
   implicit val gameStateUpdateMsgFormat = Json.format[GameStateUpdateMsg]
 }

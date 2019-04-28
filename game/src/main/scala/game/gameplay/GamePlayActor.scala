@@ -3,6 +3,8 @@ package game.gameplay
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
 
+import java.time.ZonedDateTime
+
 import akka.actor.{ Actor, ActorLogging, ActorRef, ActorSystem, Props, Cancellable, ActorContext }
 import akka.event.{ Logging, DiagnosticLoggingAdapter }
 
@@ -27,8 +29,15 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
     log.debug("I am ready")
   }
   
-  private def sendGameStateUpdateMsg(target: ActorRef, updateId: Long, table: Table) =
-    target ! GameStateUpdateMsg(gamePlayId = gamePlayId, updateId = updateId, gameState = table)
+  private def sendGameStateUpdateMsg(target: ActorRef, updateId: Long, table: Table, timer: Timer) =
+    target ! GameStateUpdateMsg(
+        gamePlayId = gamePlayId,
+        updateId = updateId,
+        gameState = table,
+        timeOfCommingEvaluation = timer match {
+          case NoTimer => None
+          case RunningTimer(_, time: ZonedDateTime) => Some(time)
+        })
 
   def receive = checkForInitialGameState
 
@@ -63,7 +72,7 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
     }
 
     if (updateToSend)
-      sendGameStateUpdateMsg(server, updateId, table)
+      sendGameStateUpdateMsg(server, updateId, table, timer)
 
     {
       case TimeToEvaluate(`updateId`) =>
@@ -119,7 +128,7 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
         }
 
         case _: GameStateRequestMsg =>
-          sendGameStateUpdateMsg(sender(), updateId, table)
+          sendGameStateUpdateMsg(sender(), updateId, table, timer)
       }
     }
   }
@@ -163,10 +172,10 @@ object GamePlayActor {
 
   case object NoTimer extends Timer
 
-  case class RunningTimer(cancellable: Cancellable) extends Timer
+  case class RunningTimer(cancellable: Cancellable, time: ZonedDateTime) extends Timer
 
   object Timer {
     def apply(timeout: FiniteDuration, actorRef: ActorRef, msg: Any)(implicit context: ActorContext, ec: ExecutionContext) =
-      RunningTimer(context.system.scheduler.scheduleOnce(timeout, actorRef, msg))
+      RunningTimer(context.system.scheduler.scheduleOnce(timeout, actorRef, msg), ZonedDateTime.now.plusNanos(timeout.toNanos))
   }
 }

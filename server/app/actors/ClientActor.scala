@@ -118,7 +118,11 @@ class ClientActor(out: ActorRef, gamesManager: ActorRef, user: User) extends Act
     case MsgToUser(`user`, msg: MsgToClient) => sendToClient(msg)
   }
   
-  def sendToClient[T](msg: T)(implicit wr: Writes[T]) = out ! Json.toJson(msg)
+  def sendToClient[T](msg: T)(implicit wr: Writes[T]) = {
+    val json = Json.toJson(msg)
+    log.debug(s"sening json to client: $json")
+    out ! json
+  }
 }
 
 object ClientActor {

@@ -4,7 +4,7 @@ import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
 
 import akka.actor.{ Actor, ActorLogging, ActorRef, ActorSystem, Props, Cancellable, ActorContext }
-import akka.event.Logging
+import akka.event.{ Logging, DiagnosticLoggingAdapter }
 
 import game.core.Player.PlayerId
 import game.core.{ GameState, Table, CardNode, PlayedCard, Card, Player }
@@ -20,6 +20,13 @@ import game.gameplay.modelsconverters._
 
 class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionContext) extends Actor with ActorLogging {
 
+  override val log: DiagnosticLoggingAdapter = Logging(this)
+  
+  override def preStart() = {
+    log.mdc(Map("actorSufix" -> s"[gamePlayId=$gamePlayId]"))
+    log.debug("I am ready")
+  }
+  
   private def sendGameStateUpdateMsg(target: ActorRef, updateId: Long, table: Table) =
     target ! GameStateUpdateMsg(gamePlayId = gamePlayId, updateId = updateId, gameState = table)
 
@@ -28,9 +35,9 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
   private def checkForInitialGameState: Receive = {
     case state: GameState =>
       context.become(checkForStartingCardRequest(state, 0))
-      log.debug("GamePlayActor: I have got a game state.")
+      log.debug("I have got a game state.")
     case _ =>
-      log.debug("GamePlayActor: I am waiting for a game state")
+      log.debug("I am waiting for a game state")
       sender ! WaitingForGameState
   }
 
@@ -69,17 +76,21 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
           case pcm: PlayedCardsRequestMsg =>
             // verify that all played cards in pcm are owned by one player
             verifyPlayedCardsRequest(pcm)(table.state) match {
-              case None => {}
+              case None =>
+                log.debug("Played cards are not owned by one player")
               case Some(cn) => (fromPlayerOpt match {
                 // if we expect played cards request only from the certain player,
                 // verify that it is his/her request
                 case Some(playerId) => if (pcm.playerId == playerId)
                   Some(cn)
-                else
+                else {
+                  log.debug("Played cards are not owned by the player whose id is in the message")
                   None
+                }
                 case None => Some(cn)
               }) match {
-                case None => {}
+                case None =>
+                  log.debug("Not attached becauce init verification")
                 // if the request is accepted due to the fact who played it,
                 // try to attached played cards to the tree
                 case Some(cn) =>
@@ -87,20 +98,24 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
                     // if played cards attached successfully create a new update
                     case (newTable, true) =>
                       cancelTimer()
+                      log.debug("Attached")
                       context.become(checkForCardRequest(newTable, updateId + 1, true, None, waitingFor, Timer(30.seconds, self, TimeToEvaluate(updateId + 1))))
-                    case _ => {}
+                    case _ =>
+                      log.debug("Not attached")
                   }
               }
             }
 
           case nam: NoActionRequestMsg =>
             val newWaitingFor = waitingFor - nam.playerId
-            if (newWaitingFor != waitingFor)
+            if (newWaitingFor != waitingFor) {
+              log.debug(s"NoActionRequest registered for updateId=$updateId")
               if (newWaitingFor.isEmpty) {
                 cancelTimer()
                 self ! TimeToEvaluate(updateId)
               } else
                 context.become(checkForCardRequest(table, updateId, false, fromPlayerOpt, newWaitingFor, timer))
+            }
         }
 
         case _: GameStateRequestMsg =>
@@ -112,7 +127,7 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
   /**
    * Returns Some(@cardNode) if all played cards from @pcm request are played by one player who has all of them in his hand. 
    */
-  private def verifyPlayedCardsRequest(pcm: PlayedCardsRequestMsg)(implicit state: GameState): Option[CardNode] = {
+  private def verifyPlayedCardsRequest(pcm: PlayedCardsRequestMsg)(implicit state: GameState): Option[CardNode] = try {
 
     def verifyWhoPlayed(node: CardTreeOrNode): Boolean = pcm.playerId == node.playedCard.whoPlayedId && node.childrenNodes.forall(verifyWhoPlayed(_))
 
@@ -133,6 +148,8 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
         None
     } else
       None
+  } catch {
+    case e: Exception => None
   }
 }
 

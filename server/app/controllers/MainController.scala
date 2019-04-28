@@ -16,26 +16,26 @@ import actors.ClientActor
 import actors.GamesManagerActor
 
 import db._
+import akka.stream.OverflowStrategy
 
 @Singleton
-class MainController @Inject() (cc: ControllerComponents) (implicit system: ActorSystem, mat: Materializer, ec: ExecutionContext) extends AbstractController(cc) {
+class MainController @Inject() (cc: ControllerComponents)(implicit system: ActorSystem, mat: Materializer, ec: ExecutionContext) extends AbstractController(cc) {
 
-  val gamesManager = system.actorOf(GamesManagerActor.props)
-  
+  val gamesManager = system.actorOf(GamesManagerActor.props, "GamesManagerActor")
+
   def index() = Action { implicit request: Request[AnyContent] =>
     {
       Ok("Welcome to the main page. Here, have the url to the websocket server: " + routes.MainController.socket().webSocketURL(secure = true))
     }
   }
-  
+
   /**
    * TODO Authentication of users
    */
   def socket = WebSocket.accept[JsValue, JsValue] { request =>
-    ActorFlow.actorRef { out =>
-      val userId = Database.getFreeUserId()
-      val user = User(userId, s"Anonymous user $userId")
-      ClientActor.props(out, gamesManager, user)
-    }
+    val userId = Database.getFreeUserId()
+    val user = User(userId, s"Anonymous user $userId")
+    CustomActorFlow.actorRef(out =>
+      ClientActor.props(out, gamesManager, user), 16, OverflowStrategy.dropNew, s"ClientActor-$userId")
   }
 }

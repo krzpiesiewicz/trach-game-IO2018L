@@ -4,7 +4,7 @@ import scala.language.implicitConversions
 import scala.concurrent.ExecutionContext
 
 import akka.actor._
-import akka.event.Logging
+import akka.event.{ Logging, DiagnosticLoggingAdapter }
 
 import jvmapi.messages._
 
@@ -24,16 +24,20 @@ import play.api.libs.json.Json
 
 class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec: ExecutionContext) extends Actor with ActorLogging {
 
+  override val log: DiagnosticLoggingAdapter = Logging(this)
+  
   private var gamePlay: ActorRef = _
   private var playersAndDrivers: PlayersAndDrivers = _
   private var usersToDrivers: Map[User, UserDriver] = _
   private var gamePlayState: GamePlayState = _
 
   override def preStart() {
+    
+    log.mdc(Map("actorSufix" -> s"[gamePlayId=$gamePlayId]"))
 
     val gameState = gamesettings.DefaultGame.multiplayerTemporaryGameState
 
-    gamePlay = context.actorOf(Props(new GamePlayActor(gamePlayId, self)))
+    gamePlay = context.actorOf(Props(new GamePlayActor(gamePlayId, self)), s"GamePlayActor-$gamePlayId")
     gamePlay ! gameState
 
     gamePlayState = GamePlayState.RUNNING
@@ -43,7 +47,7 @@ class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec
 
     context.become(ready)
 
-    log.debug(s"MultiplayerGameActor(gamePlayId=$gamePlayId): I am ready")
+    log.debug(s"I am ready")
   }
 
   override def postStop() {
@@ -58,7 +62,7 @@ class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec
 
   def ready: Receive = {
     case MsgFromPlayerDriver(driver, msg: GamePlayMsg with MsgFromClient) => if (msg.gamePlayId == gamePlayId) {
-      log.debug(s"MultiplayerGameActor(gamePlayId=$gamePlayId): MsgFromPlayerDriver($driver, $msg)")
+      log.debug(s"MsgFromPlayerDriver($driver, $msg)")
       msg match {
         case _: GamePlayInfoRequestMsg =>
           playersAndDrivers.player(driver) match {
@@ -89,7 +93,7 @@ class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec
             case None => None
             case Some(playerId) =>
               playersAndDrivers = playersAndDrivers.withDriver(driver, playerId)
-              log.debug(s"MultiplayerGameActor(gamePlayId=$gamePlayId): user $user entered the game as player of id=$playerId")
+              log.debug(s"user $user entered the game as player of id=$playerId")
               Some(playerId)
           }
         }

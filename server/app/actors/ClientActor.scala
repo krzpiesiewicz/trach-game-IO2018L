@@ -1,7 +1,7 @@
 package actors
 
 import akka.actor._
-import akka.event.Logging
+import akka.event.{Logging, DiagnosticLoggingAdapter}
 
 import play.api.libs.json._
 import play.api.libs.json.JsValue
@@ -19,9 +19,12 @@ import actors.MultiplayerGameActor.EnterGame
 
 class ClientActor(out: ActorRef, gamesManager: ActorRef, user: User) extends Actor with ActorLogging {
 
+  override val log: DiagnosticLoggingAdapter = Logging(this)
+  
   val userDriver = UserDriver(user, self)
   
   override def preStart() = {
+    log.mdc(Map("actorSufix" -> s"[userId=${user.userId}]"))
   }
   
   override def postStop() = {
@@ -82,7 +85,9 @@ class ClientActor(out: ActorRef, gamesManager: ActorRef, user: User) extends Act
     case _: QuickMultiplayerGameRequestMsg =>
       game ! MsgFromPlayerDriver(userDriver, GamePlayInfoRequestMsg(gamePlayId = gamePlayId))
     // game actor services GamePlayMsg
-    case msg: GamePlayMsg => game ! MsgFromPlayerDriver(userDriver, msg)
+    case msg: GamePlayMsg =>
+      log.debug("I received msg from client: " + msg)
+      game ! MsgFromPlayerDriver(userDriver, msg)
   })
     .orElse(transmitMsgToUser)
 

@@ -8,30 +8,29 @@
 
 class HealthBarUI : public QWidget
 {
+
 private:
 
-    QLabel* textLabel;
-
-    const std::string getLabelText(int healthValue)
-    {
-        std::string result;
-        result += "health : ";
-        result += std::to_string(healthValue);
-        return result;
-    }
+    vector<QLabel *> hearts;
 
 public:
-    HealthBarUI(QWidget* parent, int healthValue)
-    : QWidget(parent)
-    {
-        textLabel = new QLabel(this);
-        setHealthValue(healthValue);
-
-    }
+    HealthBarUI(QWidget *parent): QWidget(parent) {}
 
     void setHealthValue(int newValue)
     {
-        textLabel->setText(QString::fromStdString(getLabelText(newValue)));
+        for (auto & heart : hearts)
+        {
+            delete heart;
+        }
+        hearts.clear();
+        for (int i = 0; i < newValue; i++)
+        {
+            QLabel *heart = new QLabel(this);
+            heart->setPixmap(
+                    QPixmap(":/Assets/heart.png").scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+            heart->move(i * 20, 0);
+            hearts.emplace_back(heart);
+        }
     }
 };
 

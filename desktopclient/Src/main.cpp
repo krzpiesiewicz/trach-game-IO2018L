@@ -2,58 +2,75 @@
 //#include <UI/PlayerInfoUI.h>
 #include <cpprest/ws_client.h>
 #include <cpprest/producerconsumerstream.h>
+#include <cpprest/json.h>
+#include "cpprest/containerstream.h"
+#include "cpprest/filestream.h"
+#include "ServerConnection.h"
+#include <iostream>
+#include <sstream>
+#include <Src/Core/Requests/GameStateRequest.h>
+#include <QtWidgets/QApplication>
+#include <Src/UI/PlayerInfoUI.h>
+#include <QtWidgets/QWidget>
+#include <Src/UI/InGameUI.h>
+#include <Src/Core/GUIUpdater.h>
+#include <thread>
+
+
 using namespace web;
 using namespace web::websockets::client;
+using namespace web::json;
 using namespace std;
+
+volatile int lastId = 0;
+
+void updateGUI(GUIUpdater *updater, ServerConnection* connection, InGameUI *mainUI)
+{
+    sleep(3);
+    lastId++;
+    auto gameStateResponse = connection->getCurrentState();
+    auto gameState = gameStateResponse->gameState;
+    gameState.get()->roundId = lastId;
+    mainUI->isUpdating = true;
+    updater->sendUpdate(gameState.get());
+    while (mainUI->isUpdating)
+    {
+        usleep(1000);
+    }
+}
 
 int main(int argc, char *argv[])
 {
 
-    websocket_client client;
-    auto task = client.connect(U("wss://localhost:9001/ws"));
-    task.wait();
+    ServerConnection* connection = new ServerConnection;
+    connection->connect();
+    connection->startGame();
 
-    /*
-    websocket_outgoing_message msg;
-    concurrency::streams::producer_consumer_buffer<uint8_t> buf;
-    std::vector<uint8_t> body(6);
-    memcpy(&body[0], "hello!", 6);
+    auto gameStateResponse = connection->getCurrentState();
 
-    auto send_task = buf.putn_nocopy(&body[0], body.size()).then([&](size_t length) {
-        msg.set_binary_message(buf.create_istream(), length);
-        return client.send(msg);
-    }).then([](pplx::task<void> t)
-            {
+    int playerId = connection->gameplayState->playerId;
+    auto &gameState = gameStateResponse->gameState;
+    gameState.get()->roundId = lastId;
 
-            });
-    send_task.wait();
-
-    auto receive_task = client.receive().then([&](websocket_incoming_message message) {
-        try
-        {
-            cout <<message.length()<<"\n";
-            auto stream = message.body();
-            for (int i = 0;i<6;i++)
-            {
-                cout <<(char)stream.read().get();
-            }
-        }
-        catch(const websocket_exception& ex)
-        {
-            std::cout << ex.what();
-        }
-    });
-    receive_task.wait();*/
-
-    /*
     QApplication app(argc, argv);
     QWidget window;
-    window.resize(1280, 768);
+    window.resize(900, 480);
     window.setWindowTitle("Trach v0.1");
 
-    auto playerInfo = new PlayerInfoUI(&window, "Lemures64", 5);
+    InGameUI *mainUI = new InGameUI(&window, gameState.get(), playerId, connection);
+
+    auto *updater = new GUIUpdater();
+    QObject::connect(updater, SIGNAL(sendUpdate(GameState * )), mainUI, SLOT(setData(GameState * )));
+    auto loopTask = pplx::task<void>([&]()
+                                 {
+                                     while (lastId >= 0)
+                                     {
+                                         updateGUI(updater, connection, mainUI);
+                                     }
+
+                                 });
 
     window.show();
     return app.exec();
-    */
+
 }

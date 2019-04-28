@@ -1,0 +1,15 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource prefix="">
+        <file>Assets/avatar1.png</file>
+        <file>Assets/avatar2.png</file>
+        <file>Assets/avatar3.png</file>
+        <file>Assets/avatar4.png</file>
+        <file>Assets/avatar5.png</file>
+        <file>Assets/heart.png</file>
+
+        <file>Assets/Cards/atak.jpg</file>
+        <file>Assets/Cards/atak_global.jpg</file>
+        <file>Assets/Cards/obrona.jpg</file>
+        <file>Assets/Cards/podniesienie_priorytetu.jpg</file>
+    </qresource>
+</RCC>

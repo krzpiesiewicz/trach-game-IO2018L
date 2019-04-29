@@ -56,6 +56,7 @@ public:
 
     void setData(Player &player)
     {
+        cout <<player.name << " " << player.health << "\n";
         nickLabel->setText(QString::fromStdString(player.name));
         healthBarUI->setHealthValue(player.health);
         auto avatarPath = ":/Assets/avatar" + to_string(1 + (player.id % 5)) + ".png";

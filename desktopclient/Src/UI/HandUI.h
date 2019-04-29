@@ -79,6 +79,7 @@ private:
         {
             delete card;
         }
+        cardsUI.clear();
     }
 
     vector<CardUI *> cardsUI;

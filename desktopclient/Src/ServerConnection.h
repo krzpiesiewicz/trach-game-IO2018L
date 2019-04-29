@@ -66,12 +66,39 @@ public:
     GameStateUpdate *getCurrentState()
     {
         GameStateRequest request(gameplayState->gameplayId);
-        sendMessage(request.toString());
         auto message = receive();
         auto *result = new GameStateUpdate(message);
         updateId = result->updateId;
         mainPlayer = result->gameState->findPlayerById(gameplayState->playerId);
         return result;
+    }
+
+    void playCardTreeAtCardTree(CardTreeInternalNode* tree, int targetCardId)
+    {
+        int playerId = gameplayState->playerId;
+        int gameplayId = gameplayState->gameplayId;
+        string msgType = "PlayedCardsRequest";
+
+        json::value obj = json::value::parse("{}");
+        obj["playerId"] = json::value(playerId);
+        obj["gamePlayId"] = json::value(gameplayId);
+        obj["msgType"] = json::value(msgType);
+        obj["updateId"] = json::value(updateId);
+
+        json::value startingCard = json::value::parse("{}");;
+        startingCard["type"] = json::value("PlayedCardInTree");
+        startingCard["card"] = mainPlayer->findCardById(tree->cardId)->toJson();
+        startingCard["whoPlayedId"] = json::value(playerId);
+        startingCard["parentCardId"] = json::value(targetCardId);
+
+        json::value cardNode = json::value::parse("{}");
+        cardNode["playedCard"] = startingCard;
+        cardNode["childrenNodes"] = json::value::parse("[]");
+
+        obj["played"] = cardNode;
+
+        cout <<"Played Card: " << obj.serialize() <<"\n";
+        sendMessage(obj.serialize());
     }
 
     void playCardAtPlayer(CardTreeInternalNode* tree, int targetPlayerId)

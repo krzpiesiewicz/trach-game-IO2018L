@@ -11,6 +11,7 @@
 #include "HandUI.h"
 #include "PlayersUI.h"
 #include "../ServerConnection.h"
+#include "MainTableUI.h"
 
 class InGameUI : public QWidget
 {
@@ -21,6 +22,7 @@ private:
     PlayersUI* playersInfo;
     CurrentTreeTableUI* currentTree;
     HandUI* handUI;
+    MainTableUI* mainTableUi;
     int playerId;
 
 
@@ -41,8 +43,10 @@ public:
 
         QHBoxLayout *horizontalLayout = new QHBoxLayout();
         currentTree = new CurrentTreeTableUI(this, connection, state, playerId, handUI);
+
+        mainTableUi = new MainTableUI(this, connection);
+        horizontalLayout->addWidget(mainTableUi);
         horizontalLayout->addWidget(currentTree);
-        horizontalLayout->addWidget(new CurrentTreeTableUI(this, connection, state, playerId, handUI));
 
 
         auto bottomLayout = new QHBoxLayout();
@@ -73,6 +77,14 @@ public slots:
         playersInfo->setData(state->players);
         currentTree->setData(state);
         handUI->setData(state->findPlayerById(playerId)->hand);
+        auto player = state->findPlayerById(playerId);
+        if (!state->hasCardTree && state->playerIdOnmove != player->id)
+        {
+            currentTree->disableThrowingCards();
+        } else{
+            currentTree->enableThrowingCards();
+        }
+        mainTableUi->setData(state);
         isUpdating = false;
     }
 };

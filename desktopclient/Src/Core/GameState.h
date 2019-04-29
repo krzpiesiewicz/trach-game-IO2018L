@@ -4,6 +4,7 @@
 
 #include<vector>
 #include "Player.h"
+#include "CardTree.h"
 
 using namespace std;
 using namespace web;
@@ -20,15 +21,26 @@ public:
             cout <<rawPlayer.serialize()<<"\n";
             players.emplace_back(rawPlayer);
         }
-        cout << obj["coveredCardsStack"].serialize() << "\n";
-        cout << obj["usedCardsStack"].serialize() << "\n";
-        cout << obj["tableActiveCards"].serialize() << "\n";
+        cout <<"coveredCards: "<< obj["coveredCardsStack"].serialize() << "\n";
+        cout <<"usedCardsStack: "<< obj["usedCardsStack"].serialize() << "\n";
+        cout <<"tableActiveCards: "<< obj["tableActiveCards"].serialize() << "\n";
+
+
+        playerIdOnmove = obj["playerIdOnMove"].as_integer();
+        hasCardTree = obj.has_object_field("cardTree");
+        if (hasCardTree)
+        {
+            cout <<"cardTree: "<< obj["cardTree"].serialize() << "\n";
+            cardTree = new CardTree(obj["cardTree"]);
+        }
     }
 
     std::vector<Player>players;
     std::vector<Card>coveredCardsStack;
     std::vector<Card>usedCardsStack;
     std::vector<Card>tableActiveCards;
+    CardTree* cardTree;
+    bool hasCardTree;
     int roundId;
     int playerIdOnmove;
 

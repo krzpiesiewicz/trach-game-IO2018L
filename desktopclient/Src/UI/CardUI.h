@@ -11,14 +11,29 @@ class CardUI : public QWidget
 
 
 public:
-    QLabel* cardImage;
+
+    void addPlayerAvatar(int playingPlayerId)
+    {
+        avatar = new QLabel(this);
+        avatar->show();
+        cout <<"player" << playingPlayerId<<"\n";
+        auto avatarPath = ":/Assets/avatar" + to_string(1 + (playingPlayerId % 5)) + ".png";
+        cout <<"path : "<<avatarPath<<"\n";
+        avatar->setPixmap(QPixmap(QString::fromStdString(avatarPath)).scaled(30, 50,
+                                                                             Qt::KeepAspectRatio,
+                                                                             Qt::SmoothTransformation));
+    }
+
+    QLabel *avatar;
+    QLabel *cardImage;
     Card card;
 
-    CardUI(QWidget* parent, Card card) : QWidget(parent), card(card)
+    CardUI(QWidget *parent, Card card) : QWidget(parent), card(card)
     {
-        resize(120,200);
+        resize(120, 200);
         cardImage = new QLabel(this);
         cardImage->setPixmap(getCardImage(card.type).scaled(120, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        show();
     }
 
 

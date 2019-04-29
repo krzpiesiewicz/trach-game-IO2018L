@@ -14,14 +14,14 @@ class CardNode
 public:
     explicit CardNode(json::value obj)
     {
-        playedCard = make_shared<PlayedCardInTree>(obj["playedCard"]);
+        playedCard = new PlayedCardInTree(obj["playedCard"]);
         for (auto& rawChild : obj["childrenNodes"].as_array())
         {
             childrenNodes.emplace_back(rawChild);
         }
     }
 
-    shared_ptr<PlayedCardInTree> playedCard;
+    PlayedCardInTree* playedCard;
     vector<CardNode>childrenNodes;
 };
 

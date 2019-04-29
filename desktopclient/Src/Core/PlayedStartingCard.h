@@ -15,11 +15,11 @@ class PlayedStartingCard
 public:
     PlayedStartingCard(json::value obj)
     {
-        card = make_shared<Card>(obj["card"]);
-        targetId = obj["whoPlayedId"].as_integer();
+        card = new Card(obj["card"]);
+        whoPlayedId = obj["whoPlayedId"].as_integer();
     }
 
-    shared_ptr<Card> card;
+    Card* card;
     int whoPlayedId;
     int targetId;
     int type;

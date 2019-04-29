@@ -13,7 +13,18 @@ using namespace web;
 
 class CardTree
 {
-    PlayedStartingCard playedCard;
+public:
+
+    CardTree(json::value obj)
+    {
+        playedCard = new PlayedStartingCard(obj["playedCard"]);
+        for(auto& rawNode : obj["childrenNodes"].as_array())
+        {
+            childrenNodes.emplace_back(rawNode);
+        }
+    }
+
+    PlayedStartingCard* playedCard;
     vector<CardNode>childrenNodes;
 };
 

@@ -20,7 +20,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(QRCS resources.qrc Src/UI/MainTableUI.h)
 
-add_executable(Trach ${QRCS} Src/main.cpp Src/UI/HealthBarUI.h Src/UI/PlayerInfoUI.h Src/Core/Card.h Src/Core/Player.h Src/Core/GameState.h Src/Core/CardNode.h Src/Core/PlayedStartingCard.h Src/Core/PlayedCardInTree.h Src/ServerConnection.h Src/Core/Requests/QuickMultiplayerGameRequest.h Src/Core/Requests/GameStateRequest.h Src/Core/Responses/GameStateUpdate.h Src/Core/Responses/GameplayStateUpdate.h Src/UI/InGameUI.h Src/UI/HandUI.h Src/UI/CardUI.h Src/Core/CardTree.h Src/UI/CurrentTreeTableUI.cpp Src/UI/CurrentTreeTableUI.h Src/UI/PlayersUI.h Src/UI/CurrentCardTreeUI.h Src/Core/GUIUpdater.h Src/UI/HandUI.cpp Src/Core/CardTreeInternalNode.h Src/UI/PlayerInfoUI.cpp)
+add_executable(Trach ${QRCS} Src/main.cpp Src/UI/HealthBarUI.h Src/UI/PlayerInfoUI.h Src/Core/Card.h Src/Core/Player.h Src/Core/GameState.h Src/Core/CardNode.h Src/Core/PlayedStartingCard.h Src/Core/PlayedCardInTree.h Src/ServerConnection.h Src/Core/Requests/QuickMultiplayerGameRequest.h Src/Core/Requests/GameStateRequest.h Src/Core/Responses/GameStateUpdate.h Src/Core/Responses/GameplayStateUpdate.h Src/UI/InGameUI.h Src/UI/HandUI.h Src/UI/CardUI.h Src/Core/CardTree.h Src/UI/CurrentTreeTableUI.cpp Src/UI/CurrentTreeTableUI.h Src/UI/PlayersUI.h Src/UI/CurrentCardTreeUI.h Src/Core/GUIUpdater.h Src/UI/HandUI.cpp Src/Core/CardTreeInternalNode.h Src/UI/PlayerInfoUI.cpp Src/UI/MainTableUI.cpp)
 
 qt5_add_resources(Trach )
 target_link_libraries(Trach Qt5::Widgets)

@@ -26,7 +26,6 @@ volatile int lastId = 0;
 
 void updateGUI(GUIUpdater *updater, ServerConnection* connection, InGameUI *mainUI)
 {
-    sleep(3);
     lastId++;
     auto gameStateResponse = connection->getCurrentState();
     auto gameState = gameStateResponse->gameState;
@@ -35,7 +34,7 @@ void updateGUI(GUIUpdater *updater, ServerConnection* connection, InGameUI *main
     updater->sendUpdate(gameState.get());
     while (mainUI->isUpdating)
     {
-        usleep(1000);
+        usleep(1000000);
     }
 }
 

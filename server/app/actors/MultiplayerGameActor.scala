@@ -44,6 +44,8 @@ class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec
 
     playersAndDrivers = new PlayersAndDrivers(playersToDrivers = gameState.playersMap.keys.map(playerId => (playerId, NoDriver)).toMap)
     usersToDrivers = Map.empty
+    
+    setupBotActors(1)
 
     context.become(ready)
 
@@ -144,6 +146,19 @@ class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec
       gamePlayId = gamePlayId,
       playerId = playerId,
       gamePlayState = gamePlayState))
+  }
+  
+  private def setupBotActors(botsCount: Int) {
+    for (i <- 1 to botsCount) {
+      playersAndDrivers.playersWithNoDriver.headOption match {
+        case None => {}
+        case Some(playerId) =>
+          val bot = context.actorOf(BotActor.props(gamePlayId, playerId), s"BotActor-g$gamePlayId-p$playerId")
+          val driver = BotDriver(bot)
+          playersAndDrivers = playersAndDrivers.withDriver(driver, playerId)
+          log.debug(s"bot $bot entered the game as player of id=$playerId")
+      }
+    }
   }
 }
 

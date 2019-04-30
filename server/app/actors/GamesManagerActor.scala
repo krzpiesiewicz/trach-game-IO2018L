@@ -48,7 +48,7 @@ class GamesManagerActor()(implicit ec: ExecutionContext) extends Actor with Acto
               if (!waitingRequests.contains(key)) {
                 waitingRequests = waitingRequests + (key -> sender)
                 log.debug(s"new request added - key: $key")
-                if (waitingRequests.size >= 2) {
+                if (waitingRequests.size >= 1) {
                   val (chosen, rest) = waitingRequests.splitAt(3)
                   waitingRequests = rest
                   val gamePlayId = Database.getFreeGamePlayId()

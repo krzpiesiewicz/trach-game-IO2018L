@@ -1,14 +1,16 @@
 package bot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import scala.collection.JavaConverters;
 import scala.collection.Seq;
 
 import akka.actor.AbstractActor;
 import akka.actor.Props;
+import akka.event.DiagnosticLoggingAdapter;
 import akka.event.Logging;
-import akka.event.LoggingAdapter;
 
 import jvmapi.*;
 import jvmapi.models.*;
@@ -16,7 +18,7 @@ import jvmapi.messages.*;
 
 public class BotActor extends AbstractActor {
 
-    private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
+    private final DiagnosticLoggingAdapter log = Logging.getLogger(this);
     
     final long gamePlayId;
     final int playerId;
@@ -32,13 +34,17 @@ public class BotActor extends AbstractActor {
 
     @Override
     public void preStart() {
-        log.info("BotActor(gamePlayId={}, playerId={}) started", gamePlayId, playerId);
+    	Map<String, Object> mdc;
+        mdc = new HashMap<String, Object>();
+        mdc.put("actorSufix", "[gamePlayId=" + gamePlayId + ", playerId=" + playerId + "]");
+        log.setMDC(mdc);
+        log.info("started");
         //TODO all things to do before starting the actor
     }
 
     @Override
     public void postStop() {
-        log.info("BotActor(gamePlayId={}, playerId={}) stopped", gamePlayId, playerId);
+        log.info("stopped");
         //TODO all things to do before stopping the actor
     }
 

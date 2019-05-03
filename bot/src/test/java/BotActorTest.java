@@ -8,6 +8,9 @@ import scala.collection.JavaConverters;
 import scala.collection.Seq;
 import scala.Option;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -24,10 +27,12 @@ import bot.BotActor;
 
 public class BotActorTest {
 	static ActorSystem system;
+	static Config config;
 
 	@BeforeClass
 	public static void setup() {
-		system = ActorSystem.create();
+		config = ConfigFactory.load("test.conf");
+		system = ActorSystem.create("BotActorSystem", config.getConfig("test"));
 	}
 
 	@AfterClass
@@ -55,9 +60,12 @@ public class BotActorTest {
 		var state = new GameState(JavaConverters.collectionAsScalaIterable(Arrays.asList(p1, p2)).toSeq(),
 				JavaConverters.collectionAsScalaIterable(new ArrayList<Card>()).toSeq(),
 				JavaConverters.collectionAsScalaIterable(new ArrayList<Card>()).toSeq(),
-				JavaConverters.collectionAsScalaIterable(new ArrayList<Card>()).toSeq(), Option.apply(null));
+				JavaConverters.collectionAsScalaIterable(new ArrayList<Card>()).toSeq(),
+				Option.apply(null),
+				1,
+				1);
 
-		var msg = new GameStateUpdateMsg("GameStateUpdate", gamePlayId, 1, state);
+		var msg = new GameStateUpdateMsg("GameStateUpdate", gamePlayId, 1, state, Option.apply(null));
 
 		bot.tell(msg, probe.getRef());
 		

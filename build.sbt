@@ -32,6 +32,7 @@ lazy val bot = (project in file("bot"))
       akkaActor,
       akkaTestKit,
       akkaSlf4j,
+      playLogback,
       logbackClassic,
       "junit" % "junit" % "4.12" % Test,
       "com.novocode" % "junit-interface" % "0.11" % Test exclude("junit", "junit-dep")
@@ -48,8 +49,9 @@ lazy val server = (project in file("server"))
         macwireUtil,
         macwireProxy,
         playJson,
-        logbackClassic,
-        akkaSlf4j
+        akkaActor,
+        akkaSlf4j,
+        logbackClassic
     ),
     routesGenerator := play.routes.compiler.InjectedRoutesGenerator,
     PlayKeys.devSettings ++= Seq(
@@ -80,7 +82,9 @@ lazy val akkaTestKit = "com.typesafe.akka" %% "akka-testkit" % akkaVersion
 lazy val akkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % akkaVersion
 lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.2.3"
 
-lazy val playJson = "com.typesafe.play" %% "play-json" % "2.7.3"
+lazy val playVersion = "2.7.2"
+lazy val playJson = "com.typesafe.play" %% "play-json" % playVersion
+lazy val playLogback = "com.typesafe.play" %% "play-logback" % playVersion
 
 val macwireVersion = "2.3.1"
 val macwireMacros = "com.softwaremill.macwire" %% "macros" % macwireVersion % Provided

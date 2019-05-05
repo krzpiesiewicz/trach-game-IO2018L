@@ -64,21 +64,21 @@ case class GameStateUpdateMsg(
   gamePlayId: Long,
   updateId: Long,
   gameState: GameState,
-  timeOfCommingEvaluation: Option[DateTime] = None) extends MsgToClient with GamePlayUpdateMsg {
+  timeOfComingEvaluation: Option[DateTime] = None) extends MsgToClient with GamePlayUpdateMsg {
 
   def withPlayersNames(names: Map[Int, String]) = GameStateUpdateMsg(
     msgType,
     gamePlayId,
     updateId,
     gameState.withPlayersNames(names),
-    timeOfCommingEvaluation)
+    timeOfComingEvaluation)
 
   def presentedToPlayers(playersIds: Set[Int]) = GameStateUpdateMsg(
     msgType,
     gamePlayId,
     updateId,
     gameState.presentedToPlayers(playersIds),
-    timeOfCommingEvaluation)
+    timeOfComingEvaluation)
 }
 
 case class GamePlayResultMsg(

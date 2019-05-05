@@ -6,11 +6,12 @@ import scala.concurrent.ExecutionContext
 import akka.actor._
 import akka.event.{ Logging, DiagnosticLoggingAdapter }
 
-import jvmapi.{MsgFromPlayerDriver => BotMsgFromPlayerDriver}
-import jvmapi.messages._
-
 import messages._
 import messages.GamePlayState.GamePlayState
+
+import jvmapi._
+import jvmapi.messages._
+
 import db._
 
 import game.core.GameState
@@ -20,20 +21,19 @@ import bot.BotActor
 
 import MultiplayerGameActor._
 
-import actors.PlayerDriver._
-import play.api.libs.json.Json
+import actors.PlayersAndDrivers.sendMsgToPlayerDriver
 
 class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec: ExecutionContext) extends Actor with ActorLogging {
 
   override val log: DiagnosticLoggingAdapter = Logging(this)
-  
+
   private var gamePlay: ActorRef = _
   private var playersAndDrivers: PlayersAndDrivers = _
   private var usersToDrivers: Map[User, UserDriver] = _
   private var gamePlayState: GamePlayState = _
 
   override def preStart() {
-    
+
     log.mdc(Map("actorSufix" -> s"[gamePlayId=$gamePlayId]"))
 
     val gameState = gamesettings.DefaultGame.multiplayerTemporaryGameState
@@ -64,8 +64,7 @@ class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec
   }
 
   def ready: Receive = {
-    
-    
+    // handle a message from player driver (user or bot)
     case MsgFromPlayerDriver(driver, msg: GamePlayMsg with MsgFromClient) => if (msg.gamePlayId == gamePlayId) {
       log.debug(s"MsgFromPlayerDriver($driver, $msg)")
       msg match {
@@ -78,21 +77,8 @@ class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec
           gamePlay ! msg
       }
     }
-	
-	case BotMsgFromPlayerDriver(driver, msg: GamePlayMsg with MsgFromClient) => if (msg.gamePlayId == gamePlayId) {
-      log.debug(s"MsgFromBot($driver, $msg)")
-      msg match {
-        case _: GamePlayInfoRequestMsg =>
-		  
-          playersAndDrivers.player(driver.asInstanceOf[PlayerDriver]) match {
-            case Some(playerId) => sendGamePlayInfoUpdate(driver.asInstanceOf[PlayerDriver], playerId)
-            case None => {}
-          }
-        case _ =>
-          gamePlay ! msg
-      }
-    }
 
+    // handle a message (from user) that is not related to controlling the player
     case MsgFromUser(user, msg) => msg match {
       case EnterGame =>
         val driver = usersToDrivers.get(user) match {
@@ -122,37 +108,35 @@ class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec
           case None => {}
         }
     }
-    
+
+    // handle a message from GamePlayActor with a game state update
     case msg: GameStateUpdateMsg =>
-      log.info(s"I got msg from GamePlayActor of type ${msg.msgType}:\n$msg\n")
-      
-      val playersNames = playersAndDrivers.playersToDrivers.foldLeft[Map[Int, String]](Map.empty) { case (map, (playerId, driver)) =>
-        val nameOpt = driver match {
-          case UserDriver(user, _) => Some(user.username)
-          case _: BotDriver => Some("Server's bot")
-          case _ => None
-        }
-        nameOpt match {
-          case Some(name) => map + (playerId -> name)
-          case None => map
-        }
+      val playersNames = playersAndDrivers.playersToDrivers.foldLeft[Map[Int, String]](Map.empty) {
+        case (map, (playerId, driver)) =>
+          val nameOpt = driver match {
+            case UserDriver(user, _) => Some(user.username)
+            case _: BotDriver => Some("Server's bot")
+            case _ => None
+          }
+          nameOpt match {
+            case Some(name) => map + (playerId -> name)
+            case None => map
+          }
       }
-      
+
       val msgWithNames = msg.withPlayersNames(playersNames)
-      
-      playersAndDrivers.playersToDrivers.foreach({
+
+      playersAndDrivers.foreachDefined({
         case (playerId, driver) => sendMsgToPlayerDriver(driver, msgWithNames.presentedToPlayers(Set(playerId)))
       })
 
+    // handle other gameplay messages from GamePlayActor 
     case msg: GamePlayMsg =>
       log.debug(s"I got msg from GamePlayActor of type ${msg.msgType}")
 
-      playersAndDrivers.playersToDrivers.foreach({
+      playersAndDrivers.foreachDefined({
         case (playerId, driver) => sendMsgToPlayerDriver(driver, msg)
       })
-	case msg =>
-		log.info(msg.getClass.getName)
-		log.info(msg.isInstanceOf[MsgFromPlayerDriver].toString());
   }
 
   private def addNewDriverForUser(user: User, userRef: ActorRef): UserDriver = {
@@ -161,7 +145,7 @@ class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec
     newDriver
   }
 
-  private def sendGamePlayInfoUpdate(driver: PlayerDriver, playerId: Int) {
+  private def sendGamePlayInfoUpdate(driver: DefinedPlayerDriver, playerId: Int) {
     sendMsgToPlayerDriver(driver, GamePlayInfoUpdateMsg(
       gamePlayId = gamePlayId,
       playerId = playerId,

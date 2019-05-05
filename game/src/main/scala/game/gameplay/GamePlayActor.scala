@@ -34,7 +34,7 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
         gamePlayId = gamePlayId,
         updateId = updateId,
         gameState = table,
-        timeOfCommingEvaluation = timer match {
+        timeOfComingEvaluation = timer match {
           case NoTimer => None
           case RunningTimer(_, time: ZonedDateTime) => Some(time)
         })

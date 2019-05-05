@@ -8,11 +8,11 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.Json
 import play.api.libs.json.JsSuccess
 
-import jvmapi.messages._
 import messages._
 import db._
 
-import actors.PlayerDriver._
+import jvmapi._
+import jvmapi.messages._
 
 import actors.GamesManagerActor.{ GameRequest, RequestedGame }
 import actors.MultiplayerGameActor.EnterGame

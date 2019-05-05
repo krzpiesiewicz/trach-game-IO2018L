@@ -120,7 +120,7 @@ class ClientActor(out: ActorRef, gamesManager: ActorRef, user: User) extends Act
   
   def sendToClient[T](msg: T)(implicit wr: Writes[T]) = {
     val json = Json.toJson(msg)
-    log.debug(s"sening json to client: $json")
+    log.debug(s"Sending json to client: $json")
     out ! json
   }
 }

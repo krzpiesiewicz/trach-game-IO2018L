@@ -8,11 +8,11 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.Json
 import play.api.libs.json.JsSuccess
 
-import jvmapi.messages._
 import messages._
 import db._
 
-import actors.PlayerDriver._
+import jvmapi._
+import jvmapi.messages._
 
 import actors.GamesManagerActor.{ GameRequest, RequestedGame }
 import actors.MultiplayerGameActor.EnterGame
@@ -120,7 +120,7 @@ class ClientActor(out: ActorRef, gamesManager: ActorRef, user: User) extends Act
   
   def sendToClient[T](msg: T)(implicit wr: Writes[T]) = {
     val json = Json.toJson(msg)
-    log.debug(s"sening json to client: $json")
+    log.debug(s"Sending json to client: $json")
     out ! json
   }
 }

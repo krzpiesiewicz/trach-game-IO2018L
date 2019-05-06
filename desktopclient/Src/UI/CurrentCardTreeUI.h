@@ -15,7 +15,7 @@ public:
         this->handUI = handUI;
         currentState = gameState;
         hasCard = false;
-        setMinimumSize(600,600);
+        setMinimumSize(660,660);
     }
 
     bool canCardBePlaced(QPoint position)

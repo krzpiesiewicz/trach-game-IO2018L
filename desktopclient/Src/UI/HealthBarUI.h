@@ -29,6 +29,7 @@ public:
             heart->setPixmap(
                     QPixmap(":/Assets/heart.png").scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation));
             heart->move(i * 20, 0);
+            heart->show();
             hearts.emplace_back(heart);
         }
     }

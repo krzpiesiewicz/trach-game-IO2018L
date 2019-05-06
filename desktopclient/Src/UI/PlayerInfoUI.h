@@ -10,6 +10,7 @@
 #include "HealthBarUI.h"
 
 class QDragEnterEvent;
+class QDragLeaveEvent;
 class QDropEvent;
 
 class PlayerInfoUI : public QWidget
@@ -26,51 +27,20 @@ private:
 
 public:
 
-    PlayerInfoUI(QWidget *parent, Player &player, ServerConnection* connection)
-            : QWidget(parent)
-    {
-        this->connection = connection;
-        playerId = player.id;
-        setMinimumWidth(200);
-        setMinimumHeight(100);
+    void paintEvent(QPaintEvent *e);
 
-        resize(200, 100);
-        background = new QLabel(this);
-        QImage image;
-        image = QImage(200, 100, QImage::Format_ARGB32);
-        image.fill(qRgb(220, 220, 220));
-        background->setPixmap(QPixmap::fromImage(image));
+    PlayerInfoUI(QWidget *parent, Player &player, ServerConnection* connection);
 
-        nickLabel = new QLabel(this);
-        nickLabel->resize(300, 50);
+    void setData(Player &player);
 
-        avatar = new QLabel(this);
-        avatar->move(140, 0);
-
-        healthBarUI = new HealthBarUI(this);
-        healthBarUI->move(0, 50);
-
-        setData(player);
-        setAcceptDrops(true);
-    }
-
-    void setData(Player &player)
-    {
-        cout <<player.name << " " << player.health << "\n";
-        nickLabel->setText(QString::fromStdString(player.name));
-        healthBarUI->setHealthValue(player.health);
-        auto avatarPath = ":/Assets/avatar" + to_string(1 + (player.id % 5)) + ".png";
-        avatar->setPixmap(QPixmap(QString::fromStdString(avatarPath)).scaled(60, 100,
-                                                                             Qt::KeepAspectRatio,
-                                                                             Qt::SmoothTransformation));
-
-    }
+    void dragLeaveEvent(QDragLeaveEvent *event) override;
 
     void dragEnterEvent(QDragEnterEvent *event) override;
 
     void dragMoveEvent(QDragMoveEvent *event) override;
 
     void dropEvent(QDropEvent *event) override;
+
 };
 
 

@@ -20,8 +20,19 @@ public:
 
     void paintEvent( QPaintEvent *e )
     {
+        static const QPointF points[4] = {
+                QPointF(5.0, 5.0),
+                QPointF(5.0, 655.0),
+                QPointF(655.0, 655.0),
+                QPointF(655.0, 5.0)
+        };
+
         QPainter painter(this);
-        painter.setPen(Qt::blue);
+
+        QPen pen;
+        pen.setWidth(2);
+        painter.setPen(pen);
+        painter.drawPolygon(points, 4);
         painter.setFont(QFont("Arial", 30));
         painter.drawText(rect(), Qt::AlignCenter, canMakeMove? "Rzuć karty tutaj" : "Czekaj na swoją turę");
     }
@@ -50,7 +61,6 @@ protected:
 
 private:
     int playerId;
-    QLabel* label;
     ServerConnection* connection;
     GameState* currentState;
     CurrentCardTreeUI* currentTree;

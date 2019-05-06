@@ -4,7 +4,7 @@
 
 
 #include <QApplication>
-#include "GameState.h"
+#include "Src/Core/GameState.h"
 
 class GUIUpdater : public QObject {
     Q_OBJECT

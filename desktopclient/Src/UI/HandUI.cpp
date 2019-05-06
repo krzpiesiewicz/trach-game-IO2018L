@@ -16,7 +16,6 @@ void HandUI::mousePressEvent(QMouseEvent *event)
     }
     auto *child = dynamic_cast<CardUI *>(childImage->parentWidget());
 
-    cout << "mousePressEvent\n";
 
     QPixmap pixmap = *childImage->pixmap();
 

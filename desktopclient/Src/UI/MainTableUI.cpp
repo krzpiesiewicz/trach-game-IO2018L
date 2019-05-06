@@ -27,7 +27,6 @@ void MainTableUI::dragMoveEvent(QDragMoveEvent *event)
 
 void MainTableUI::dropEvent(QDropEvent *event)
 {
-    cout << "Drop table" << "\n";
     if (event->mimeData()->hasFormat("cardTreeToPlay"))
     {
 
@@ -55,7 +54,6 @@ void MainTableUI::dropEvent(QDropEvent *event)
 
         if (foundCard != nullptr)
         {
-            cout <<foundCard->id << "\n";
             connection ->playCardTreeAtCardTree(tree, foundCard->id);
             event->acceptProposedAction();
         } else

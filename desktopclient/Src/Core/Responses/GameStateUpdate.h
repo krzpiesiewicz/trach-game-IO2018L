@@ -17,11 +17,20 @@ public:
         gameplayId = obj["gamePlayId"].as_integer();
         updateId = obj["updateId"].as_integer();
         gameState = make_shared<GameState>(obj["gameState"]);
+
+        hasPlannedEvaluation = obj.has_object_field("timeOfCommingEvaluation");
+        if (hasPlannedEvaluation)
+        {
+            evaluationTime = obj["timeOfCommingEvaluation"].as_string();
+        }
     }
 
     int gameplayId;
     int updateId;
     shared_ptr<GameState> gameState;
+    bool hasPlannedEvaluation;
+    string evaluationTime;
+
 };
 
 

@@ -16,9 +16,7 @@ public:
     {
         avatar = new QLabel(this);
         avatar->show();
-        cout <<"player" << playingPlayerId<<"\n";
         auto avatarPath = ":/Assets/avatar" + to_string(1 + (playingPlayerId % 5)) + ".png";
-        cout <<"path : "<<avatarPath<<"\n";
         avatar->setPixmap(QPixmap(QString::fromStdString(avatarPath)).scaled(30, 50,
                                                                              Qt::KeepAspectRatio,
                                                                              Qt::SmoothTransformation));

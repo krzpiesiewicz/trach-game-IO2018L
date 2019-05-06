@@ -36,7 +36,7 @@ public:
             isDirty = true;
         } else
         {
-            for (int i = 0; i < cardsUI.size(); i++)
+            for (int i = 0; i < (int)cardsUI.size(); i++)
             {
                 if (cardsUI[i]->card.id != cards[i].id)
                 {
@@ -62,7 +62,7 @@ public:
 
     void showAllCards()
     {
-        for (auto card: cardsUI)
+        for (auto& card: cardsUI)
         {
             card -> show();
         }
@@ -75,7 +75,7 @@ private:
 
     void clearCards()
     {
-        for (auto card: cardsUI)
+        for (auto& card: cardsUI)
         {
             delete card;
         }

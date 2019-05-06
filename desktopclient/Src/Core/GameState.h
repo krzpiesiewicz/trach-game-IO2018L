@@ -18,19 +18,14 @@ public:
         auto rawPlayers = obj["players"].as_array();
         for (auto& rawPlayer : rawPlayers)
         {
-            cout <<rawPlayer.serialize()<<"\n";
             players.emplace_back(rawPlayer);
         }
-        cout <<"coveredCards: "<< obj["coveredCardsStack"].serialize() << "\n";
-        cout <<"usedCardsStack: "<< obj["usedCardsStack"].serialize() << "\n";
-        cout <<"tableActiveCards: "<< obj["tableActiveCards"].serialize() << "\n";
-
 
         playerIdOnmove = obj["playerIdOnMove"].as_integer();
         hasCardTree = obj.has_object_field("cardTree");
+
         if (hasCardTree)
         {
-            cout <<"cardTree: "<< obj["cardTree"].serialize() << "\n";
             cardTree = new CardTree(obj["cardTree"]);
         }
     }
@@ -41,8 +36,10 @@ public:
     std::vector<Card>tableActiveCards;
     CardTree* cardTree;
     bool hasCardTree;
+    bool hasPlannedEvaluation;
     int roundId;
     int playerIdOnmove;
+    string evaluationTime;
 
     Player* findPlayerById(int playerId)
     {

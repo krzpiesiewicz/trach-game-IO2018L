@@ -19,7 +19,6 @@ public:
         id = obj["id"].as_integer();
         name = obj["name"].as_string();
         health = obj["health"].as_integer();
-        cout << id << " " << name << " " << health << "\n";
         for (auto &rawCard : obj["hand"].as_array())
         {
             hand.emplace_back(rawCard);

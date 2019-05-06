@@ -27,6 +27,7 @@ private:
     websocket_client client;
     int updateId;
     Player* mainPlayer;
+    string nextEvaluationDate;
 
     string receive()
     {
@@ -34,6 +35,7 @@ private:
         {
             auto message = client.receive().get();
             auto messageString = message.extract_string().get();
+            cout <<"received message: " << messageString<<"\n";
             return messageString;
         }
         catch (const websocket_exception &ex)
@@ -51,10 +53,11 @@ private:
             websocket_outgoing_message msg;
             msg.set_utf8_message(message);
             client.send(msg).get();
+            cout <<"sending message: " << message<<"\n";
         }
         catch (const websocket_exception &ex)
         {
-            cout << "sending message : " << message << " failed\n";
+            cout << "sending message: " << message << " failed\n";
             cout << ex.what() << "\n";
         }
     }
@@ -97,7 +100,6 @@ public:
 
         obj["played"] = cardNode;
 
-        cout <<"Played Card: " << obj.serialize() <<"\n";
         sendMessage(obj.serialize());
     }
 
@@ -125,7 +127,6 @@ public:
 
         obj["played"] = cardTree;
 
-        cout <<"Played Card: " << obj.serialize() <<"\n";
         sendMessage(obj.serialize());
     }
 
@@ -150,8 +151,6 @@ public:
         auto messageString = receive();
         gameplayState = new GameplayStateUpdate(messageString);
         cout << "started game! \n";
-        cout << "playerId: " << gameplayState->playerId << "\n";
-        cout << "gameplayId: " << gameplayState->gameplayId << "\n";
 
     }
 };

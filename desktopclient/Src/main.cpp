@@ -13,7 +13,7 @@
 #include <Src/UI/PlayerInfoUI.h>
 #include <QtWidgets/QWidget>
 #include <Src/UI/InGameUI.h>
-#include <Src/Core/GUIUpdater.h>
+#include <Src/UI/GUIUpdater.h>
 #include <thread>
 
 
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     window.resize(900, 480);
     window.setWindowTitle("Trach v0.1");
 
-    InGameUI *mainUI = new InGameUI(&window, gameState.get(), playerId, connection);
+    auto *mainUI = new InGameUI(&window, gameState.get(), playerId, connection);
 
     auto *updater = new GUIUpdater();
     QObject::connect(updater, SIGNAL(sendUpdate(GameState * )), mainUI, SLOT(setData(GameState * )));

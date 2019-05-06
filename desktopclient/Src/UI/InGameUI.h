@@ -31,36 +31,29 @@ public:
     InGameUI(QWidget *parent, GameState *state, int playerId, ServerConnection* connection)
             : QWidget(parent)
     {
-        playersInfo = new PlayersUI(this, connection);
         this->playerId = playerId;
-        auto &players = state->players;
-        auto player = state->findPlayerById(playerId);
-        handUI = new HandUI(parent, player->hand);
 
         auto mainLayout = new QHBoxLayout(parent);
-
-        QVBoxLayout *leftMainLayout = new QVBoxLayout();
-
-        QHBoxLayout *horizontalLayout = new QHBoxLayout();
-        currentTree = new CurrentTreeTableUI(this, connection, state, playerId, handUI);
-
-        mainTableUi = new MainTableUI(this, connection);
-        horizontalLayout->addWidget(mainTableUi);
-        horizontalLayout->addWidget(currentTree);
-
-
+        auto leftMainLayout = new QVBoxLayout();
+        auto horizontalLayout = new QHBoxLayout();
         auto bottomLayout = new QHBoxLayout();
+        auto rightBarLayout = new QVBoxLayout();
 
-
-        QVBoxLayout *rightBarLayout = new QVBoxLayout();
-
+        playersInfo = new PlayersUI(this, connection);
         rightBarLayout->addLayout(playersInfo->layout);
 
-        mainPlayerInfo = new PlayerInfoUI(parent, *(player), connection);
-
+        auto mainPlayer = state->findPlayerById(playerId);
+        handUI = new HandUI(parent, mainPlayer->hand);
+        mainPlayerInfo = new PlayerInfoUI(parent, *(mainPlayer), connection);
 
         bottomLayout->addWidget(mainPlayerInfo, 1);
         bottomLayout->addWidget(handUI, 100);
+
+        currentTree = new CurrentTreeTableUI(this, connection, state, playerId, handUI);
+        mainTableUi = new MainTableUI(this, connection);
+
+        horizontalLayout->addWidget(mainTableUi);
+        horizontalLayout->addWidget(currentTree);
 
         leftMainLayout->addLayout(horizontalLayout, 100);
         leftMainLayout->addLayout(bottomLayout, 1);
@@ -85,6 +78,8 @@ public slots:
             currentTree->enableThrowingCards();
         }
         mainTableUi->setData(state);
+        auto mainPlayer = state->findPlayerById(playerId);
+        mainPlayerInfo->setData(*mainPlayer);
         isUpdating = false;
     }
 };

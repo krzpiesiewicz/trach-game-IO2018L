@@ -45,6 +45,8 @@ class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec
 
     playersAndDrivers = new PlayersAndDrivers(playersToDrivers = gameState.playersMap.keys.map(playerId => (playerId, NoDriver)).toMap)
     usersToDrivers = Map.empty
+    
+    setupBotActors(1)
 
     context.become(ready)
 
@@ -109,8 +111,6 @@ class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec
 
     // handle a message from GamePlayActor with a game state update
     case msg: GameStateUpdateMsg =>
-      log.debug(s"I got msg from GamePlayActor of type ${msg.msgType}:\n$msg\n")
-
       val playersNames = playersAndDrivers.playersToDrivers.foldLeft[Map[Int, String]](Map.empty) {
         case (map, (playerId, driver)) =>
           val nameOpt = driver match {
@@ -150,6 +150,19 @@ class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec
       gamePlayId = gamePlayId,
       playerId = playerId,
       gamePlayState = gamePlayState))
+  }
+  
+  private def setupBotActors(botsCount: Int) {
+    for (i <- 1 to botsCount) {
+      playersAndDrivers.playersWithNoDriver.headOption match {
+        case None => {}
+        case Some(playerId) =>
+          val bot = context.actorOf(BotActor.props(self, gamePlayId, playerId), s"BotActor-g$gamePlayId-p$playerId")
+          val driver = BotDriver(bot)
+          playersAndDrivers = playersAndDrivers.withDriver(driver, playerId)
+          log.debug(s"bot $bot entered the game as player of id=$playerId")
+      }
+    }
   }
 }
 

@@ -52,7 +52,14 @@ case class NoActionRequestMsg(
   gamePlayId: Long,
   updateId: Long,
   playerId: Int) extends MsgFromClient with GamePlayUpdateMsg
-
+  
+case class HandExchangeRequestMsg(
+  msgType: String = "HandExchangeRequest",
+  gamePlayId: Long,
+  updateId: Long,
+  playerId: Int,
+  cardsIdsToExchange: Seq[Int]) extends MsgFromClient with GamePlayUpdateMsg
+  
 case class GamePlayResultRequestMsg(
   msgType: String = "GamePlayResultRequest",
   gamePlayId: Long) extends MsgFromClient with GamePlayMsg

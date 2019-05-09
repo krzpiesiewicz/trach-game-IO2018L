@@ -33,7 +33,7 @@ class BotActorTestScala extends FunSuite with BeforeAndAfterAll {
 
     val gamePlayId = 42
     val probe = TestProbe()
-    val bot = system.actorOf(BotActor.props(gamePlayId, 1))
+    val bot = system.actorOf(BotActor.props(probe.ref, gamePlayId, 1))
 
     val p1 = Player(1, "player A", 5, Seq(Card(1, "attack"), Card(2, "priority_inc")), Seq.empty)
 		val p2 = Player(1, "player A", 5, Seq(Card(3, "defence")), Seq.empty)

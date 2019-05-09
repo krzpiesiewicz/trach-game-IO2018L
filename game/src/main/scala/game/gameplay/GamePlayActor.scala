@@ -108,7 +108,7 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
                     case (newTable, true) =>
                       cancelTimer()
                       log.debug("Attached")
-                      context.become(checkForCardRequest(newTable, updateId + 1, true, None, waitingFor, Timer(30.seconds, self, TimeToEvaluate(updateId + 1))))
+                      context.become(checkForCardRequest(newTable, updateId + 1, true, None, waitingFor, Timer(5.seconds, self, TimeToEvaluate(updateId + 1))))
                     case _ =>
                       log.debug("Not attached")
                   }

@@ -63,15 +63,25 @@ public:
 
             auto card = state->cardTree->playedCard->card;
             cardTree.emplace_back(new CardUI(this, *card));
-            cardTree[cardTree.size() - 1]->move(offset);
+
             int id =0;
 
             for (auto& child : state->cardTree->childrenNodes)
             {
-                auto cardPosition = offset + QPoint(125 * id, cardSize.y());
-                addSubTree(child, cardPosition, cardCenter);
-                edges.emplace_back(cardPosition + cardCenter, cardCenter);
-                id += getSubTreeWidth(child);
+                auto width = getSubTreeWidth(child);
+                id+= width;
+            }
+            auto totalWidth = id;
+            cardTree[0]->move(offset + QPoint( 62.5 * max(0,(totalWidth - 1)), 0));
+            id = 0;
+
+            for (auto& child : state->cardTree->childrenNodes)
+            {
+                auto width = getSubTreeWidth(child);
+                auto cardPosition = offset + QPoint(125 * id + 62.5 * (width - 1), cardSize.y());
+                addSubTree(child, cardPosition - QPoint( 62.5 * (width - 1), 0), cardPosition + cardCenter );
+                edges.emplace_back(cardPosition + cardCenter, cardCenter + QPoint( 62.5 * max(0,(totalWidth - 1)), 0));
+                id += width;
             }
         }
     }
@@ -81,16 +91,19 @@ public:
         QPoint cardSize(120, 200);
         QPoint cardCenter = cardSize / 2.0f;
 
+        auto width = getSubTreeWidth(node);
         cardTree.emplace_back(new CardUI(this, *node.playedCard->card));
-        cardTree[cardTree.size() - 1]->move(position);
+        cardTree[cardTree.size() - 1]->move(position + QPoint( 62.5 * (width - 1), 0));
+
         int id =0;
 
         for (auto& child : node . childrenNodes)
         {
-            auto cardPosition = QPoint(125 * id, cardSize.y());
-            addSubTree(child, cardPosition, position + cardCenter);
+            width = getSubTreeWidth(child);
+            auto cardPosition = position + QPoint(125 * id + 62.5 * (width - 1), cardSize.y());
+            addSubTree(child, cardPosition - QPoint( 62.5 * (width - 1), 0), cardPosition + cardCenter);
             edges.emplace_back(cardPosition + cardCenter, previousCardCenter);
-            id += getSubTreeWidth(child);
+            id += width;
         }
     }
 

@@ -88,4 +88,8 @@ object GameState {
     } else
       state
   }
+  
+  def putCardOnDiscardedStack(card: Card, state: GameState): GameState = state transformed {
+    case stack: DiscardedCardsStack => stack.push(card);
+  }
 }

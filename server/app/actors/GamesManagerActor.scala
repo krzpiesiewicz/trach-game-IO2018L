@@ -48,8 +48,8 @@ class GamesManagerActor()(implicit ec: ExecutionContext) extends Actor with Acto
               if (!waitingRequests.contains(key)) {
                 waitingRequests = waitingRequests + (key -> sender)
                 log.debug(s"new request added - key: $key")
-                if (waitingRequests.size >= 1) {
-                  val (chosen, rest) = waitingRequests.splitAt(3)
+                if (waitingRequests.size >= 2) {
+                  val (chosen, rest) = waitingRequests.splitAt(2)
                   waitingRequests = rest
                   val gamePlayId = Database.getFreeGamePlayId()
                   val game = context.actorOf(Props(new MultiplayerGameActor(self, gamePlayId)), s"MultiplayerGameActor-gamePlayId-$gamePlayId")

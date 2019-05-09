@@ -7,7 +7,7 @@ case class HandExchange(player: Player, cards: Seq[Card])
 
 object HandExchange {
   /**
-   * If number of cards to exchange is not greater than 3, then there are exchange to 
+   * If number of cards to exchange is not greater than 3, then there are exchange to
    */
   def exchange(he: HandExchange)(implicit state: GameState): (GameState, Boolean) = {
     val notExchanged = (state, false)
@@ -20,7 +20,10 @@ object HandExchange {
         })
       }
       val newState = he.cards.foldLeft(stateWithPlayersHPdecreased) {
-        (state, card) => GameState.removeCardFromPlayersHand(he.player, card, state)
+        (state, card) =>
+          GameState.putCardOnDiscardedStack(
+            card = card,
+            state = GameState.removeCardFromPlayersHand(he.player, card, state))
       }
       (newState, true)
     }

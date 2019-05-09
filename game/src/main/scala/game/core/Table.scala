@@ -81,7 +81,7 @@ case class Table(val state: GameState, val tree: TreeOfCards = EmptyTree) {
       case EmptyTree => state
       case tree: TreeWithCards =>
         val wholeTreeIsAdded = isRootOfAddedSubtree(tree)
-        tree.actionBuilder(state) match {
+        val evaluatedState = tree.actionBuilder(state) match {
           case Some(action) =>
             val childrenTransformers = tree.children.map { child =>
               val isNodeOfAddedSubtree = wholeTreeIsAdded || isRootOfAddedSubtree(child)
@@ -107,6 +107,9 @@ case class Table(val state: GameState, val tree: TreeOfCards = EmptyTree) {
               throw new Exception("Root node action not build successfully")
             state
         }
+      tree.playedCards.foldLeft(evaluatedState) { case (state, pc) =>
+        GameState.putCardOnDiscardedStack(pc.card, state)
+      }
     }
   }
 }

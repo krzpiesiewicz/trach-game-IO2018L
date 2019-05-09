@@ -36,6 +36,9 @@ function addDroppable() {
 function displayInit() {
     $("#beginAction").hide();
     $("#targetChooser").hide();
+    $("#NoActionButton").click(function() {
+        sendNoActionRequest();
+    });
     addDroppable();
 }
 

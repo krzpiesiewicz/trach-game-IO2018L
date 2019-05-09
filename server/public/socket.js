@@ -82,6 +82,16 @@ function sendPlayedRequest(thrownCard, parentId, targetId) {
     doSend(JSON.stringify(msg));
 }
 
+function sendNoActionRequest() {
+    var msg = {
+        msgType: "NoActionRequest",
+        gamePlayId: gamePlayId,
+        playerId: myPlayerId,
+        updateId: updateId
+    };
+    doSend(JSON.stringify(msg));
+}
+
 
 //HELPERS
 

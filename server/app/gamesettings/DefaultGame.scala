@@ -10,8 +10,8 @@ object DefaultGame {
     implicit val cardFactory = new DefaultCardFactory
     
     val p1Cards = Seq(
-        Card[AttackCard](),
-        Card[AttackCard](),
+//        Card[AttackCard](),
+//        Card[AttackCard](),
         Card[PriorityIncrementerCard](),
         Card[DefenceCard](),
         Card[PriorityIncrementerCard]())

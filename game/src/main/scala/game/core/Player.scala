@@ -28,6 +28,8 @@ case class Player(val id: PlayerId, val attributes: AttributesSet[PlayerAttribut
   def transformed(transformer: AttributeTransformer[PlayerAttribute]): Player = Player(id, attributes.transformed(transformer))
   
   def owns(card: Card): Boolean = hand.cards contains card
+  
+  def isDead: Boolean = health.value == 0
 }
 
 object Player {

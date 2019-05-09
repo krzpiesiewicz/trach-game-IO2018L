@@ -66,7 +66,24 @@ object DefaultAttributes {
   }
 
   case class DefaultRoundsManager(val currentPlayer: Player, val roundId: Int = 1) extends RoundsManager {
-    def nextPlayer(circleOfPlayers: CircleOfPlayers) = circleOfPlayers.nextTo(currentPlayer)
+    
+    def nextPlayer(circleOfPlayers: CircleOfPlayers): Player = {
+      /**
+       * Returns the first alive player next to given @player
+       * or @currentPlayer if no one alive between @player and @currentPlayer.
+       */
+      def nextAlive(player: Player): Player = {
+        val next = circleOfPlayers.nextTo(player)
+        if (!next.isDead)
+          next
+        else if (next != currentPlayer)
+          nextAlive(next)
+        else
+          currentPlayer
+      }
+      
+      nextAlive(currentPlayer)
+    }
     
     def withNextRound(circleOfPlayers: CircleOfPlayers) = DefaultRoundsManager(nextPlayer(circleOfPlayers), roundId + 1)
   }

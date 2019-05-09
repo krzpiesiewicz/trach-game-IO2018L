@@ -48,10 +48,26 @@ trait GameState {
 }
 
 case class NormalState(override val attributes: AttributesSet[GlobalAttribute]) extends GameState {
-  def transformed(transformer: AttributeTransformer[GlobalAttribute]) = new NormalState(attributes.transformed(transformer))
+  def transformed(transformer: AttributeTransformer[GlobalAttribute]) = {
+    val normalState = NormalState(attributes.transformed(transformer))
+    val alivePlayers = normalState.playersMap.values.filter(!_.isDead).toSeq
+    
+    if (alivePlayers.length >= 2)
+      normalState
+    else if (alivePlayers.isEmpty)
+      NoOneAlive(normalState.attributes)
+    else // only one player alive
+      GameWin(normalState.attributes, alivePlayers.head)
+  }
 }
 
-trait EndState extends GameState
+trait EndState extends GameState {
+  def transformed(transformer: AttributeTransformer[GlobalAttribute]) = this
+}
+
+case class NoOneAlive(override val attributes: AttributesSet[GlobalAttribute]) extends EndState
+
+case class GameWin(override val attributes: AttributesSet[GlobalAttribute], winner: Player) extends EndState
 
 object GameState {
   

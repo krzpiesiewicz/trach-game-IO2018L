@@ -20,6 +20,10 @@ import jvmapi.messages._
 import game.gameplay.GamePlayActor._
 import game.gameplay.modelsconverters._
 import game.core.HandExchange
+import game.core.NormalState
+import game.core.EndState
+import game.core.GameWin
+import game.core.NoOneAlive
 
 class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionContext) extends Actor with ActorLogging {
 
@@ -77,8 +81,7 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
 
     {
       case TimeToEvaluate(`updateId`) =>
-        val state = table.evaluate.withNextRound
-        context.become(checkForStartingCardRequest(state, updateId + 1))
+        nextRound(table.evaluate, updateId)
 
       case msg: GamePlayMsg => if (msg.gamePlayId == gamePlayId) msg match {
         case msg: GamePlayUpdateMsg => if (msg.updateId == updateId) msg match {
@@ -140,7 +143,7 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
                     HandExchange.exchange(handExchange) match {
                       case (newState, true) =>
                         log.debug("Exchanged")
-                        context.become(checkForStartingCardRequest(newState.withNextRound, updateId + 1))
+                        nextRound(newState, updateId)
                       case _ =>
                         log.debug("Not exchanged")
                     }
@@ -155,6 +158,39 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
         case _: GameStateRequestMsg =>
           sendGameStateUpdateMsg(sender(), updateId, table, timer)
       }
+    }
+  }
+  
+  private def nextRound(state: GameState, updateId: Long): Unit = state.withNextRound match {
+    case ns: NormalState =>
+      context.become(checkForStartingCardRequest(ns, updateId + 1))
+    case es: EndState =>
+      context.become(gameEnded(es, updateId + 1))
+      /* imitation that server requested game state update and game play result.
+       * It causes sending game state update and game play result to the server. */
+      self.tell(GameStateRequestMsg(gamePlayId=gamePlayId), server)
+  }
+  
+  private def gameEnded(endState: EndState, updateId: Long): Receive = {
+    case msg: GamePlayMsg => if (msg.gamePlayId == gamePlayId) msg match {
+      case _: GameStateRequestMsg =>
+        sender ! GameStateUpdateMsg(
+          gamePlayId = gamePlayId,
+          updateId = updateId,
+          gameState = endState)
+        // send gameplay result also:
+        self.tell(GamePlayResultRequestMsg(gamePlayId=gamePlayId), server)
+          
+      case _: GamePlayResultRequestMsg =>
+        val winnerId = endState match {
+          case gw: GameWin => gw.winner.id
+          case _: NoOneAlive => -1
+        }
+        sender ! GamePlayResultMsg(
+          gamePlayId = gamePlayId,
+          winnerId = winnerId)
+          
+      case _ => {}
     }
   }
 

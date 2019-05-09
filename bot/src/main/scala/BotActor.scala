@@ -70,7 +70,9 @@ class BotActor(server: ActorRef, gamePlayId: Long, botPlayerId: Int)(implicit ec
             val priorityIncCardOpt = botPlayer.hand.find(_.`type` == "priority_inc")
             sendPlayedCards(attackTree(attackCard, targetPlayer, priorityIncCardOpt))
         }
-      case None => {}
+        
+      case None => // if there is no attack card, then exchange 3 cards from hand.
+        sendHandExchange(botPlayer.hand.take(3))
     }
   }
 
@@ -94,6 +96,7 @@ class BotActor(server: ActorRef, gamePlayId: Long, botPlayerId: Int)(implicit ec
             /* send no action (in case of the defence failure) */
             sendNoAction
         }
+      case _ => sendNoAction
     }
   }
 
@@ -142,6 +145,14 @@ class BotActor(server: ActorRef, gamePlayId: Long, botPlayerId: Int)(implicit ec
       gamePlayId = gamePlayId,
       updateId = msg.updateId,
       playerId = botPlayerId))
+  }
+  
+  private def sendHandExchange(cardsToExchange: Seq[Card])(implicit msg: GameStateUpdateMsg) {
+    sendMsgToServer(HandExchangeRequestMsg(
+      gamePlayId = gamePlayId,
+      updateId = msg.updateId,
+      playerId = botPlayerId,
+      cardsIdsToExchange = cardsToExchange.map(_.id)))
   }
 
   private def sendMsgToServer(msg: Any) {

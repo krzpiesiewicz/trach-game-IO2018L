@@ -21,6 +21,8 @@ object DefaultAttributes {
   case class DefaultHealth(val value: Int = 5, val maxValue: Int = 5) extends Health {
 
     def getDamage(damageValue: Int) = new DefaultHealth(value - damageValue, maxValue)
+    
+    def changedHP(change: Int) = new DefaultHealth(math.max(0, math.min(maxValue, value + change)), maxValue)
   }
 
   case class DefaultHand(val maxCards: Int = 5, val cards: Seq[Card]) extends Hand {

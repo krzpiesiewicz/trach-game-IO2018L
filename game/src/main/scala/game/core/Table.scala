@@ -1,7 +1,5 @@
 package game.core
 
-import game.Logging.logger
-
 import game.core.actions._
 
 /**
@@ -15,10 +13,9 @@ case class Table(val state: GameState, val tree: TreeOfCards = EmptyTree) {
    * Otherwise it returns (@this, false).
    */
   def attach(cn: CardNode): (Table, Boolean) = {
-    val notAttached: (Table, Boolean) = (this, false)
+    val notAttached = (this, false)
     try {
       val newTree = tree.attachSubtree(cn)
-//      logger.debug(newTree.toString())
       val newState = cn.playedCards.foldLeft(state) {
         (state, pc) => GameState.removeCardFromPlayersHand(pc.player, pc.card, state)
       }

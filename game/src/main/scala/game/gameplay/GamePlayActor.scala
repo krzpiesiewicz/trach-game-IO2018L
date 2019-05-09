@@ -19,6 +19,7 @@ import jvmapi.messages._
 
 import game.gameplay.GamePlayActor._
 import game.gameplay.modelsconverters._
+import game.core.HandExchange
 
 class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionContext) extends Actor with ActorLogging {
 
@@ -125,6 +126,30 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
               } else
                 context.become(checkForCardRequest(table, updateId, false, fromPlayerOpt, newWaitingFor, timer))
             }
+            
+          case hem: HandExchangeRequestMsg =>
+            fromPlayerOpt match {
+              // HandExchangeRequest is available only at the beginning of a round and only for the player on move.
+              // Verify that it is his/her request.
+              case Some(playerId) => if (hem.playerId == playerId) {
+                implicit val state = table.state
+                
+                verifyHandExchangeRequest(hem) match {
+                  case None => {}
+                  case Some(handExchange) =>
+                    HandExchange.exchange(handExchange) match {
+                      case (newState, true) =>
+                        log.debug("Exchanged")
+                        context.become(checkForStartingCardRequest(newState.withNextRound, updateId + 1))
+                      case _ =>
+                        log.debug("Not exchanged")
+                    }
+                }
+              }
+              else
+                log.debug("HandExchangeRequest is available only of the player on move.")
+              case None => log.debug("HandExchangeRequest is available only at the beginning of a round.")
+            }
         }
 
         case _: GameStateRequestMsg =>
@@ -156,6 +181,17 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
       else
         None
     } else
+      None
+  } catch {
+    case e: Exception => None
+  }
+  
+  private def verifyHandExchangeRequest(hem: HandExchangeRequestMsg)(implicit state: GameState): Option[HandExchange] = try {
+    val handExchange: HandExchange = hem
+    // verify that all of cards to exchange are owned by player.
+    if (handExchange.cards.forall(handExchange.player.owns(_)))
+      Some(handExchange)
+    else
       None
   } catch {
     case e: Exception => None

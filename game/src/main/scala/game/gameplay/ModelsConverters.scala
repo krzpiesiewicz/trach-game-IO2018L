@@ -6,6 +6,7 @@ import game.standardtrach.Cards
 import game.core.actions.BuildersFactory
 
 import jvmapi.models._
+import jvmapi.messages.HandExchangeRequestMsg
 
 package object modelsconverters {
 
@@ -112,4 +113,7 @@ package object modelsconverters {
     case tree: CardTree => toTreeWithCards(tree)
     case node: CardNode => toCardInnerNode(node)
   }
+  
+  implicit def toHandExchange(hem: HandExchangeRequestMsg)(implicit state: game.core.GameState): game.core.HandExchange =
+    game.core.HandExchange(state.player(hem.playerId), hem.cardsIdsToExchange.map(state.card(_)))
 }

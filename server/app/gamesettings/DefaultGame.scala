@@ -33,20 +33,20 @@ object DefaultGame {
         DefaultHealth(),
         DefaultActiveCards())))
         
-//    val p3Cards = Seq(
-//        Card[PriorityIncrementerCard](),
-//        Card[PriorityIncrementerCard](),
-//        Card[PriorityIncrementerCard](),
-//        Card[PriorityIncrementerCard](),
-//        Card[DefenceCard]())
-//        
-//    val p3 = Player(3, DefaultAttributesSet(Seq(
-//        DefaultHand(cards = p3Cards),
-//        DefaultHealth(),
-//        DefaultActiveCards())))
+    val p3Cards = Seq(
+        Card[AttackCard](),
+        Card[AttackCard](),
+        Card[PriorityIncrementerCard](),
+        Card[PriorityIncrementerCard](),
+        Card[DefenceCard]())
+        
+    val p3 = Player(3, DefaultAttributesSet(Seq(
+        DefaultHand(cards = p3Cards),
+        DefaultHealth(),
+        DefaultActiveCards())))
     
-//    val circle = CircleOfPlayers(Array(p1, p2, p3))
-    val circle = CircleOfPlayers(Array(p1, p2))
+    val circle = CircleOfPlayers(Array(p1, p2, p3))
+//    val circle = CircleOfPlayers(Array(p1, p2))
     
     val coveredCards = Seq(
         Card[AttackCard](),
@@ -62,7 +62,7 @@ object DefaultGame {
         Card[DefenceCard](),
         Card[DefenceCard]())
     
-    val cards = p1Cards ++ p2Cards /*++ p3Cards*/ ++ coveredCards
+    val cards = p1Cards ++ p2Cards ++ p3Cards ++ coveredCards
     
     val state = NormalState(new DefaultAttributesSet(Seq(
         DefaultPlayers(circle),

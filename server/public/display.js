@@ -36,6 +36,9 @@ function addDroppable() {
 function displayInit() {
     $("#beginAction").hide();
     $("#targetChooser").hide();
+    $("#NoActionButton").click(function() {
+        sendNoActionRequest();
+    });
     addDroppable();
 }
 
@@ -90,7 +93,7 @@ function addPlayersStats(players) {
 function addHandCards(cards) {
     $("#playerMeView").html("");
     cards.forEach(function(card, idx) {
-        html = '<img class="handCard" data-card-idx="' + idx + '" src="cards/' + card.type + '.jpg"' + '>';
+        html = '<img class="handCard" data-card-idx="' + idx + '" src="/assets/cards/' + card.type + '.jpg"' + '>';
         $("#playerMeView").append(html);
     });
     $(".handCard").draggable({
@@ -122,7 +125,7 @@ function buildTree(node, div, color) {
 function displayCard(playedCard, div, color) {
     card = playedCard.card;
     html = '<span class="playerId"></span>';
-    html += '<img class="imgAtTable playHere" data-drop-id="' + card.id + '" src="cards/' + card.type + '.jpg">';
+    html += '<img class="imgAtTable playHere" data-drop-id="' + card.id + '" src="/assets/cards/' + card.type + '.jpg">';
     html += '<span class="playerId"></span>';
     div.append(html);
 

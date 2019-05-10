@@ -18,6 +18,12 @@ trait Health extends PlayerAttribute {
    * Health should implement policy of getting damages.
    */
   def getDamage(damageValue: Int): Health
+  
+  /**
+   * Returns a health of player with newValue equal old @value + @change. Of course, @newValue should be in [0, maxValue].
+   * The change is absolute. It should be modified by any health policy.
+   */
+  def changedHP(change: Int): Health
 }
 
 trait Hand extends PlayerAttribute {

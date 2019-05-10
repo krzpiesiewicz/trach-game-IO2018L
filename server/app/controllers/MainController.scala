@@ -38,4 +38,10 @@ class MainController @Inject() (cc: ControllerComponents)(implicit system: Actor
     CustomActorFlow.actorRef(out =>
       ClientActor.props(out, gamesManager, user), 16, OverflowStrategy.dropNew, s"ClientActor-$userId")
   }
+  
+  def game() = Action { implicit request: Request[AnyContent] =>
+    {
+      Redirect("/assets/game.html")
+    }
+  }
 }

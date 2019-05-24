@@ -26,7 +26,7 @@ case class GameState(
   coveredCardsStack: Seq[Card] = Seq.empty,
   usedCardsStack: Seq[Card] = Seq.empty,
   tableActiveCards: Seq[Card] = Seq.empty,
-  cardTree: Option[CardTree] = None,
+  cardTrees: Vector[CardTree] = Vector.empty,
   roundId: Int,
   playerIdOnMove: Int) {
 
@@ -38,7 +38,7 @@ case class GameState(
     coveredCardsStack,
     usedCardsStack,
     tableActiveCards,
-    cardTree,
+    cardTrees,
     roundId,
     playerIdOnMove)
 
@@ -50,7 +50,7 @@ case class GameState(
     coveredCardsStack.map(_.covered),
     usedCardsStack,
     tableActiveCards,
-    cardTree,
+    cardTrees,
     roundId,
     playerIdOnMove)
 }
@@ -60,7 +60,7 @@ trait CardTreeOrNode {
   val childrenNodes: Seq[CardNode]
 }
 
-case class CardTree(playedCard: PlayedStartingCard, childrenNodes: Seq[CardNode] = Seq.empty) extends CardTreeOrNode
+case class CardTree(id: Int, playedCard: PlayedStartingCard, childrenNodes: Seq[CardNode] = Seq.empty) extends CardTreeOrNode
 
 case class CardNode(playedCard: PlayedCardInTree, childrenNodes: Seq[CardNode] = Seq.empty) extends CardTreeOrNode
 
@@ -164,7 +164,7 @@ object GameState {
 
 object CardTreeOrNode {
   def apply(playedCard: PlayedCard, childrenNodes: Seq[CardNode]): CardTreeOrNode = playedCard match {
-    case psc: PlayedStartingCard => CardTree(psc, childrenNodes)
+    case psc: PlayedStartingCard => CardTree(-1, psc, childrenNodes)
     case pcit: PlayedCardInTree => CardNode(pcit, childrenNodes)
   }
 

@@ -70,7 +70,8 @@ object DefaultGame {
         DefaultCoveredCardsStack(coveredCards.toVector),
         DefaultDiscardedCardsStack(Vector.empty),
         DefaultGlobalActiveCards(Vector.empty),
-        DefaultRoundsManager(p1)
+        DefaultRoundsManager(p1),
+        CardTrees()
         )))
     
     state

@@ -4,7 +4,7 @@ import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
 
 import akka.actor._
-import akka.event.{ Logging, DiagnosticLoggingAdapter }
+import akka.event.{Logging, DiagnosticLoggingAdapter}
 
 import jvmapi._
 import jvmapi.models._
@@ -13,7 +13,7 @@ import scala.util.Random
 
 import BotActor._
 
-class BotActor(server: ActorRef, gamePlayId: Long, botPlayerId: Int)(implicit ec: ExecutionContext) extends Actor with ActorLogging {
+class BotActor(server: ActorRef, gamePlayId: Long, botPlayerId: Int, delay: FiniteDuration)(implicit ec: ExecutionContext) extends Actor with ActorLogging {
 
   override val log: DiagnosticLoggingAdapter = Logging(this)
 
@@ -48,13 +48,12 @@ class BotActor(server: ActorRef, gamePlayId: Long, botPlayerId: Int)(implicit ec
           throw new Exception(message)
       }
 
-      cardTree match {
-        case None => // if the card tree is empty, then it is a beginning of a round.
-          if (playerIdOnMove == botPlayerId)
-            botsTurn
-        case Some(tree) =>
-          checkCardTree(tree)
-      }
+      if (cardTrees.isEmpty) {
+        // if the card tree is empty, then it is a beginning of a round.
+        if (playerIdOnMove == botPlayerId)
+          botsTurn
+      } else
+        checkCardTree(cardTrees.head)
     }
   }
 
@@ -116,6 +115,7 @@ class BotActor(server: ActorRef, gamePlayId: Long, botPlayerId: Int)(implicit ec
         parentCardId = attackCard.id)))
     }
     CardTree(
+      id = -1,
       playedCard = PlayedStartingCardAtPlayer(
         card = attackCard,
         whoPlayedId = botPlayerId,
@@ -161,13 +161,18 @@ class BotActor(server: ActorRef, gamePlayId: Long, botPlayerId: Int)(implicit ec
   }
 
   private def sendMsgToServer(msg: Any) {
-    // send message with 1.5s delay (for better users' impressions).
-    context.system.scheduler.scheduleOnce(1500.milliseconds, self, MsgToSend(MsgFromPlayerDriver(BotDriver(self), msg)))
+    val msgToSend = MsgToSend(MsgFromPlayerDriver(BotDriver(self), msg))
+    // send message with the @delay (for better users' impressions).
+    if (delay > 0.seconds)
+      context.system.scheduler.scheduleOnce(delay, self, msgToSend)
+    else
+      self ! msgToSend
   }
 }
 
 object BotActor {
-  def props(server: ActorRef, gamePlayId: Long, botPlayerId: Int)(implicit ec: ExecutionContext) = Props(new BotActor(server, gamePlayId, botPlayerId))
+  def props(server: ActorRef, gamePlayId: Long, botPlayerId: Int, delay: FiniteDuration)(implicit ec: ExecutionContext) =
+    Props(new BotActor(server, gamePlayId, botPlayerId, delay))
 
   case class MsgToSend(msg: Any)
 }

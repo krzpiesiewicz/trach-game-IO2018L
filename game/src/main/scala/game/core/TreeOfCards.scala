@@ -102,7 +102,7 @@ case class TreeWithCards(
 
   def withChildren(newChildren: Seq[CardInnerNode]) = TreeWithCards(playedCard, actionBuilder, newChildren)
   
-  def attachSubtree(subtree: CardNode): TreeOfCards = subtree match {
+  def attachSubtree(subtree: CardNode): TreeWithCards = subtree match {
     case subtree: CardInnerNode => attach(subtree)
     case _ => throw new Exception(s"Cannot attached a subtree where its root is based on a starting card played.")
   }

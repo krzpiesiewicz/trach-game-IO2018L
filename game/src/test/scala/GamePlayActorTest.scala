@@ -57,7 +57,7 @@ class GamePlayActorTest extends FunSuite with BeforeAndAfterAll {
         gamePlayId = gamePlayId,
         updateId = updateId0,
         playerId = p1.id,
-        played = CardTree(PlayedStartingCardAtPlayer(
+        played = CardTree(-1, PlayedStartingCardAtPlayer(
           card = ac2,
           whoPlayedId = p1.id,
           targetPlayerId = p2.id))),
@@ -69,7 +69,7 @@ class GamePlayActorTest extends FunSuite with BeforeAndAfterAll {
         gamePlayId = gamePlayId,
         updateId = updateId0,
         playerId = p1.id,
-        played = CardTree(PlayedStartingCardAtPlayer(
+        played = CardTree(-1, PlayedStartingCardAtPlayer(
           card = ac,
           whoPlayedId = p1.id,
           targetPlayerId = p2.id))),
@@ -130,7 +130,7 @@ class GamePlayActorTest extends FunSuite with BeforeAndAfterAll {
     val updateId3 = probe.expectMsgPF(1.second) {
       case msg: GameStateUpdateMsg => {
         // At the beginning of a new round, table's tree of cards should be empty
-        assert(msg.gameState.cardTree.isEmpty)
+        assert(msg.gameState.cardTrees.isEmpty)
         msg.updateId
       }
       case msg => {

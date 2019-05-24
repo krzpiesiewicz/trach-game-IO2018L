@@ -43,40 +43,37 @@ package object modelsconverters {
 
   implicit def cardSeq(cards: Seq[game.core.Card]): Seq[Card] = cards.map(toCardModel(_))
 
-  implicit def toCardTreeModel(tree: game.core.TreeWithCards): CardTree = CardTree(
-    tree.playedCard,
-    tree.children.map(toCardNodeModel(_)))
+  implicit def toCardTreeModel(idWithTree: (Int, game.core.TreeWithCards)): CardTree = {
+    val (treeId, tree) = idWithTree
+    CardTree(
+      treeId,
+      tree.playedCard,
+      tree.children.map(toCardNodeModel(_)))
+  }
 
   implicit def toCardNodeModel(node: game.core.CardInnerNode): CardNode = CardNode(
     node.playedCard,
     node.children.map(toCardNodeModel(_)))
 
-  def toGameStateModel(state: game.core.GameState, treeOpt: Option[game.core.TreeOfCards]): GameState = GameState(
+  implicit def toCardTreeVector(trees: Map[Int, game.core.TreeWithCards]): Vector[CardTree] =
+    trees.toVector.map(toCardTreeModel(_))
+
+  implicit def toGameStateModel(state: game.core.GameState): GameState = GameState(
     state.playersMap.values.map(toPlayerModel(_)).toSeq,
     state.coveredCardsStack.cards,
     state.discardedCardsStack.cards,
     state.globalActiveCards.cards,
-    treeOpt match {
-      case Some(tree: game.core.TreeOfCards) => tree match {
-        case tree: game.core.TreeWithCards => Some(toCardTreeModel(tree))
-        case _ => None
-      }
-      case _ => None
-    },
+    state.cardTrees.trees,
     state.roundsManager.roundId,
     state.roundsManager.currentPlayer.id)
-
-  implicit def toGameStateModel(state: game.core.GameState): GameState = toGameStateModel(state, None)
-
-  implicit def toGameStateModel(table: game.core.Table): GameState = toGameStateModel(table.state, Some(table.tree))
 
   // convertes jvmapi models to game objects:
 
   /**
-   * It checks if a request is correct according to a game state. It means checking if all ids can be mapped for existing objects
-   * (throws an exception if something does not exist in game state).
-   * It does not check if the player owns the card, nor other similar constraints!
-   */
+    * It checks if a request is correct according to a game state. It means checking if all ids can be mapped for existing objects
+    * (throws an exception if something does not exist in game state).
+    * It does not check if the player owns the card, nor other similar constraints!
+    */
   implicit def toPlayedCard(pc: PlayedCard)(implicit state: game.core.GameState): game.core.PlayedCard[_ <: game.core.Card] = pc match {
     case pc: PlayedStartingCardAtPlayer => toPlayedStartingCardAtPlayer(pc)
     case pc: PlayedStartingCardAtCard => toPlayedStartingCardAtCard(pc)
@@ -113,7 +110,7 @@ package object modelsconverters {
     case tree: CardTree => toTreeWithCards(tree)
     case node: CardNode => toCardInnerNode(node)
   }
-  
+
   implicit def toHandExchange(hem: HandExchangeRequestMsg)(implicit state: game.core.GameState): game.core.HandExchange =
     game.core.HandExchange(state.player(hem.playerId), hem.cardsIdsToExchange.map(state.card(_)))
 }

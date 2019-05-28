@@ -3,10 +3,26 @@ package game.core
 import Player.PlayerId
 import game.core.Card.CardId
 
+/**
+ * Attributes are abstractions which describes the state of game. Almost every element in game should be an attribute
+ * or be included in some attribute.
+ * There are two main kinds of attributes:
+ *  @PlayerAttribute - describing a player. Every @Player has a set of attributes (@AttributesSet[PlayerAttribute]).
+ *  @GlobalAttribute - describing the whole game (not connected with the certain player).
+ *  @GameState has a set of attributes (@AttributesSet[GlobalAttribute]).
+ * 
+ */
 trait Attribute
 
+/**
+ * Attribute describing the whole game (not connected with the certain player).
+ * @GameState has a set of attributes (@AttributesSet[GlobalAttribute]).
+ */
 trait GlobalAttribute extends Attribute
 
+/**
+ * Attribute describing a player. Every @Player has a set of attributes (@AttributesSet[PlayerAttribute]).
+ */
 trait PlayerAttribute extends Attribute
 
 trait Health extends PlayerAttribute {

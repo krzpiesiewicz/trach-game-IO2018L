@@ -8,9 +8,9 @@ import game.core.actions._
 object Table {
   
   /**
-   * Finds a tree in the given @stream of (treeId, tree) that is the @tree where card node @cardNode should be attached
-   * and attaches @cardNode to the found @tree.
-   * If such a @tree is found in the @stream then it returns (@treeId, @tree).
+   * Finds a tree in the given @param stream of (treeId, tree) that is the @tree where card node @param cardNode should be attached
+   * and attaches @param cardNode to the found @param tree.
+   * If such a @param tree is found in the @stream then it returns (@param treeId, @param tree).
    * Otherwise it throws an exception.
    */
   def findTreeAndAttach(cardNode: CardNode, stream: Stream[(Int, TreeWithCards)]): (Int, TreeWithCards) = stream match {

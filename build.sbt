@@ -65,6 +65,7 @@ lazy val server = (project in file("server"))
     )
   )
   .enablePlugins(PlayScala)
+  .enablePlugins(ScalaUnidocPlugin)
   .dependsOn(jvmapi, game, bot)
   
 lazy val commonSettings = Seq(
@@ -75,6 +76,7 @@ lazy val commonSettings = Seq(
     "org.scalatest" %% "scalatest" % "3.0.5" % "test"
   ),
   scalacOptions ++= Seq("-feature"),
+  autoAPIMappings := true
 )
 
 lazy val akkaVersion = "2.5.19"

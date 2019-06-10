@@ -79,7 +79,7 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
               val newState = new PlayingCards(pcm.played, state.player(pcm.playerId)).state
               cancelTimer()
               log.debug(s"PlayedCardsRequest: Attached played cards by player ${pcm.playerId}")
-              context.become(checkForCardRequest(newState, updateId + 1, true, waitingFor, Timer(5.seconds, self, TimeToEvaluate(updateId + 1))))
+              context.become(checkForCardRequest(newState, updateId + 1, true, waitingFor, Timer(10.seconds, self, TimeToEvaluate(updateId + 1))))
             } catch {
               case e: Exception => log.debug(s"PlayedCardsRequest: ${e.getMessage}")
             }

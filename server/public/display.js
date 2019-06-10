@@ -3,22 +3,28 @@ var myPlayerId;
 var gameState;
 var gamePlayId;
 
+/**
+ * List of targetable card types
+ */
 var targetableList = ["attack"];
 
 var waitTree;
 
+/**
+ * Checks if card type is targetable
+ * @param {string} type 
+ */
 function checkTargetable(type) {
     if (type == "attack") return true;
     else return false;
-    // targetableList.forEach(function(el) {
-    //     console.log(el);
-    //     if (el == type) {
-    //         return true;
-    //     }
-    // });
-    // return false;
 }
 
+/**
+ * Attaches node to card-wait
+ * @param {number} thrownCard 
+ * @param {number} atId 
+ * @param {number} node 
+ */
 function attachNode(thrownCard, atId, node) {
     if (atId == -1 && $("#cardWait").html() == "") {
         waitTree = {
@@ -49,6 +55,9 @@ function attachNode(thrownCard, atId, node) {
     displayCardWait();
 }
 
+/**
+ * Adds droppable class to apriopriate elements
+ */
 function addDroppable() {
     $(".playHere").droppable({
         drop: function(event, ui) {
@@ -84,6 +93,9 @@ function addDroppable() {
     });
 }
 
+/**
+ * Handles card-wait displaying
+ */
 function displayCardWait() {
     $("#cardWait").html("");
     buildTree(waitTree, $("#cardWait"), "#ffff00", true);
@@ -97,6 +109,9 @@ function displayCardWait() {
     drag.attr("data-card-idx", "-1");
 }
 
+/**
+ * Applies initial settings
+ */
 function displayInit() {
     $("#beginAction").hide();
     $("#targetChooser").hide();
@@ -111,6 +126,13 @@ function displayInit() {
     addDroppable();
 }
 
+
+/**
+ * Handles target choosing after playing targetable card
+ * @param {number} thrownCard 
+ * @param {number} atId 
+ * @param {number} cardWait 
+ */
 function handleTargetableRequest(thrownCard, atId, cardWait) {
     $("#targetChooser").show();
 
@@ -136,6 +158,10 @@ function handleTargetableRequest(thrownCard, atId, cardWait) {
     });
 }
 
+
+/**
+ * Updates view after game-state change
+ */
 function updateView() {
     $("#tree").hide();
     if (gameState.cardTrees.length == 0 &&
@@ -159,13 +185,16 @@ function updateView() {
         });
     }
 
-
-
     addPlayersStats(gameState.players);
     addHandCards(gameState.players[myPlayerId - 1].hand);
     addTargets(gameState.players);
 }
 
+
+/**
+ * Adds target to target-choosing view
+ * @param {object[]} players 
+ */
 function addTargets(players) {
     $("#targetChooser").html("");
     players.forEach(function(player) {
@@ -174,6 +203,10 @@ function addTargets(players) {
     });
 }
 
+/**
+ * Adds player stats to players view
+ * @param {object[]} players 
+ */
 function addPlayersStats(players) {
     $("#statsView").html("");
     players.forEach(function(player) {
@@ -182,6 +215,11 @@ function addPlayersStats(players) {
     });
 }
 
+
+/**
+ * Adds cards to player's hand view
+ * @param {object[]} cards 
+ */
 function addHandCards(cards) {
     $("#playerMeView").html("");
     cards.forEach(function(card, idx) {
@@ -196,6 +234,13 @@ function addHandCards(cards) {
     });
 }
 
+/**
+ * Builds tree on table (or subtree)
+ * @param {number} node 
+ * @param {object} div 
+ * @param {string} color 
+ * @param {boolean} cardWait 
+ */
 function buildTree(node, div, color, cardWait = false) {
     div.css("background-color", color);
     div.append('<div class="cardContainer"></div>')
@@ -214,6 +259,14 @@ function buildTree(node, div, color, cardWait = false) {
     addDroppable();
 }
 
+
+/**
+ * Displays card in tree
+ * @param {object} pC 
+ * @param {object} div 
+ * @param {string} color 
+ * @param {boolean} cardWait 
+ */
 function displayCard(pC, div, color, cardWait) {
     card = pC.card;
     html = '<span class="playerId">' + pC.whoPlayedId + '</span>';
@@ -230,6 +283,11 @@ function displayCard(pC, div, color, cardWait) {
 
 }
 
+/**
+ * Tunes color's brightness
+ * @param {string} col 
+ * @param {number} amt 
+ */
 function lightenDarkenColor(col, amt) { // Function copied from internet. Don't blame me for the style.
     var usePound = false;
     if (col[0] == "#") {
@@ -249,7 +307,9 @@ function lightenDarkenColor(col, amt) { // Function copied from internet. Don't 
     return (usePound ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16);
 }
 
-
+/**
+ * Tree display test
+ */
 var treeTest = {
     playedCard: {
         type: "PlayedStartingCardAtPlayer",
@@ -302,6 +362,9 @@ var treeTest = {
     ]
 };
 
+/**
+ * Test invoker
+ */
 function doTestTree() {
     buildTree(treeTest, $("#tree"), "#ffff00");
 }

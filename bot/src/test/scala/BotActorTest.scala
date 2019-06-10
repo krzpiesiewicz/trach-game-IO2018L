@@ -18,7 +18,7 @@ import jvmapi.messages._
 
 import bot.BotActor
 
-class BotActorTestScala extends FunSuite with BeforeAndAfterAll {
+class BotActorTest extends FunSuite with BeforeAndAfterAll {
 
   implicit val executionContext = ExecutionContext.Implicits.global
 
@@ -33,12 +33,12 @@ class BotActorTestScala extends FunSuite with BeforeAndAfterAll {
 
     val gamePlayId = 42
     val probe = TestProbe()
-    val bot = system.actorOf(BotActor.props(probe.ref, gamePlayId, 1))
+    val bot = system.actorOf(BotActor.props(probe.ref, gamePlayId, 1, 0.milliseconds))
 
     val p1 = Player(1, "player A", 5, Seq(Card(1, "attack"), Card(2, "priority_inc")), Seq.empty)
-		val p2 = Player(1, "player A", 5, Seq(Card(3, "defence")), Seq.empty)
+		val p2 = Player(2, "player A", 5, Seq(Card(3, "defence")), Seq.empty)
 
-		val state = GameState(Seq(p1, p2), Seq.empty, Seq.empty, Seq.empty, None, 1, 1)
+		val state = GameState(Seq(p1, p2), Seq.empty, Seq.empty, Seq.empty, Vector.empty, 1, 1)
 
 		val msg = GameStateUpdateMsg(gamePlayId = gamePlayId, updateId = 1, gameState = state)
     

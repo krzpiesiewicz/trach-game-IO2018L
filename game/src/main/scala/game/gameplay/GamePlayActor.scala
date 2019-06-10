@@ -2,28 +2,17 @@ package game.gameplay
 
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
-
 import java.time.ZonedDateTime
 
-import akka.actor.{ Actor, ActorLogging, ActorRef, ActorSystem, Props, Cancellable, ActorContext }
-import akka.event.{ Logging, DiagnosticLoggingAdapter }
-
+import akka.actor.{Actor, ActorContext, ActorLogging, ActorRef, ActorSystem, Cancellable, Props}
+import akka.event.{DiagnosticLoggingAdapter, Logging}
 import game.core.Player.PlayerId
-import game.core.{ GameState, Table, CardNode, PlayedCard, Card, Player }
+import game.core._
 import game.standardtrach.actions.buildersFactory
-
-import jvmapi.models.{ GameState => GameStateApi }
-import jvmapi.models.{ PlayedCard => PlayedCardApi }
-import jvmapi.models.CardTreeOrNode
+import jvmapi.models.{CardTree, CardTreeOrNode, GameState => GameStateApi, PlayedCard => PlayedCardApi}
 import jvmapi.messages._
-
 import game.gameplay.GamePlayActor._
 import game.gameplay.modelsconverters._
-import game.core.HandExchange
-import game.core.NormalState
-import game.core.EndState
-import game.core.GameWin
-import game.core.NoOneAlive
 
 class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionContext) extends Actor with ActorLogging {
 
@@ -34,11 +23,11 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
     log.debug("I am ready")
   }
   
-  private def sendGameStateUpdateMsg(target: ActorRef, updateId: Long, table: Table, timer: Timer) =
+  private def sendGameStateUpdateMsg(target: ActorRef, updateId: Long, state: GameState, timer: Timer) =
     target ! GameStateUpdateMsg(
         gamePlayId = gamePlayId,
         updateId = updateId,
-        gameState = table,
+        gameState = state,
         timeOfComingEvaluation = timer match {
           case NoTimer => None
           case RunningTimer(_, time: ZonedDateTime) => Some(time)
@@ -56,7 +45,7 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
   }
 
   private def checkForStartingCardRequest(state: GameState, updateId: Long) = checkForCardRequest(
-    Table(state),
+    state,
     updateId,
     true,
     Some(state.roundsManager.currentPlayer.id),
@@ -64,7 +53,7 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
     NoTimer)
 
   private def checkForCardRequest(
-    table: Table,
+    state: GameState,
     updateId: Long,
     updateToSend: Boolean,
     fromPlayerOpt: Option[PlayerId],
@@ -77,18 +66,18 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
     }
 
     if (updateToSend)
-      sendGameStateUpdateMsg(server, updateId, table, timer)
+      sendGameStateUpdateMsg(server, updateId, state, timer)
 
     {
       case TimeToEvaluate(`updateId`) =>
-        nextRound(table.evaluate, updateId)
+        nextRound(Table.evaluate(state), updateId)
 
       case msg: GamePlayMsg => if (msg.gamePlayId == gamePlayId) msg match {
         case msg: GamePlayUpdateMsg => if (msg.updateId == updateId) msg match {
 
           case pcm: PlayedCardsRequestMsg =>
             // verify that all played cards in pcm are owned by one player
-            verifyPlayedCardsRequest(pcm)(table.state) match {
+            verifyPlayedCardsRequest(pcm)(state) match {
               case None =>
                 log.debug("Played cards are not owned by one player")
               case Some(cn) => (fromPlayerOpt match {
@@ -107,12 +96,12 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
                 // if the request is accepted due to the fact who played it,
                 // try to attached played cards to the tree
                 case Some(cn) =>
-                  table.attach(cn) match {
+                  Table.attach(cn, state) match {
                     // if played cards attached successfully create a new update
-                    case (newTable, true) =>
+                    case (newState, true) =>
                       cancelTimer()
                       log.debug("Attached")
-                      context.become(checkForCardRequest(newTable, updateId + 1, true, None, waitingFor, Timer(5.seconds, self, TimeToEvaluate(updateId + 1))))
+                      context.become(checkForCardRequest(newState, updateId + 1, true, None, waitingFor, Timer(5.seconds, self, TimeToEvaluate(updateId + 1))))
                     case _ =>
                       log.debug("Not attached")
                   }
@@ -127,7 +116,7 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
                 cancelTimer()
                 self ! TimeToEvaluate(updateId)
               } else
-                context.become(checkForCardRequest(table, updateId, false, fromPlayerOpt, newWaitingFor, timer))
+                context.become(checkForCardRequest(state, updateId, false, fromPlayerOpt, newWaitingFor, timer))
             }
             
           case hem: HandExchangeRequestMsg =>
@@ -135,8 +124,7 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
               // HandExchangeRequest is available only at the beginning of a round and only for the player on move.
               // Verify that it is his/her request.
               case Some(playerId) => if (hem.playerId == playerId) {
-                implicit val state = table.state
-                
+                implicit val gameState = state
                 verifyHandExchangeRequest(hem) match {
                   case None => {}
                   case Some(handExchange) =>
@@ -156,7 +144,7 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
         }
 
         case _: GameStateRequestMsg =>
-          sendGameStateUpdateMsg(sender(), updateId, table, timer)
+          sendGameStateUpdateMsg(sender(), updateId, state, timer)
       }
     }
   }
@@ -206,16 +194,21 @@ class GamePlayActor(gamePlayId: Long, server: ActorRef)(implicit ec: ExecutionCo
       // convert jvmapi.models.CardNode to game.core.CardNode
       val cardNode: CardNode = pcm.played
 
+      pcm.played match { // if played tree is rooted, then check if its id equals to -1
+        case tree: CardTree => if (tree.id != -1) throw new Exception("Played CardTree should have id = -1")
+        case _ => {}
+      }
+
       /**
        * Returns all played cards from subtree of @node.
        */
       def getCards(node: CardNode): Seq[PlayedCard[_]] = node.children.foldLeft[Seq[PlayedCard[_]]](Seq(node.playedCard)) { case (seq, child) => seq ++ getCards(child) }
       
       // verify that the player owns all the cards from the tree.
-      if (getCards(cardNode).forall(pc => pc.player.owns(pc.card.asInstanceOf[Card])))
-        Some(cardNode)
-      else
-        None
+      if (!getCards(cardNode).forall(pc => pc.player.owns(pc.card.asInstanceOf[Card])))
+        throw new Exception("The player does not own some card from the played tree")
+
+      Some(cardNode)
     } else
       None
   } catch {

@@ -37,10 +37,9 @@ object DafaultData {
         DefaultCoveredCardsStack(Vector(shc)),
         DefaultDiscardedCardsStack(Vector.empty),
         DefaultGlobalActiveCards(Vector.empty),
-        DefaultRoundsManager(p1)
+        DefaultRoundsManager(p1),
+        CardTrees()
         )))
-    
-    val table = Table(state)
   }
   
   object multiplayerTemporaryData {
@@ -112,9 +111,8 @@ object DafaultData {
         DefaultCoveredCardsStack(coveredCards.toVector),
         DefaultDiscardedCardsStack(Vector.empty),
         DefaultGlobalActiveCards(Vector.empty),
-        DefaultRoundsManager(p1)
+        DefaultRoundsManager(p1),
+        CardTrees()
         )))
-        
-     val table = Table(state)
   }
 }

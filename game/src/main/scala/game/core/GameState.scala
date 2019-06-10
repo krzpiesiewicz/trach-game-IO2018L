@@ -19,6 +19,8 @@ trait GameState {
   
   lazy val roundsManager = attributes.forceGet[RoundsManager]
   
+  lazy val cardTrees = attributes.forceGet[CardTrees]
+  
   /**
    * Throws an exception if there is no card of id = cardId.
    */

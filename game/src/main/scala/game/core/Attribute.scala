@@ -90,6 +90,11 @@ trait RoundsManager extends GlobalAttribute {
   def withNextRound(circleOfPlayers: CircleOfPlayers): RoundsManager
 }
 
+/**
+ * CardTrees is a global attribute storing all card trees built by players during the current round.
+ */
+case class CardTrees(trees: Map[Int, TreeWithCards] = Map.empty) extends GlobalAttribute
+
 object Attribute {
   type AttributeTransformer[A <: Attribute] = PartialFunction[A, A]
 }

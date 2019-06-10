@@ -21,7 +21,7 @@ lazy val game = (project in file("game"))
       akkaActor,
       akkaTestKit,
       akkaSlf4j,
-      playJson,
+      playJson
     )
   ).dependsOn(jvmapi)
   
@@ -33,9 +33,7 @@ lazy val bot = (project in file("bot"))
       akkaTestKit,
       akkaSlf4j,
       playLogback,
-      logbackClassic,
-      "junit" % "junit" % "4.12" % Test,
-      "com.novocode" % "junit-interface" % "0.11" % Test exclude("junit", "junit-dep")
+      logbackClassic
     )
   ).dependsOn(jvmapi)
   
@@ -61,7 +59,7 @@ lazy val server = (project in file("server"))
       "play.server.https.port" -> "9001",
       "play.server.https.idleTimeout" -> "1000s",
       "play.client.https.idleTimeout" -> "1000s",
-      "akka.receive" -> "on",
+      "akka.receive" -> "on"
 //       "play.server.https.engineProvider" -> "play.core.server.ssl.DefaultSSLEngineProvider"
 //       "play.server.https.engineProvider" -> "main.CustomSSLEngineProvider"
     )
@@ -72,7 +70,10 @@ lazy val server = (project in file("server"))
 lazy val commonSettings = Seq(
   scalaVersion := "2.12.6",
   organization := "com.example",
-  libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test",
+  libraryDependencies ++= Seq(
+    "org.scalactic" %% "scalactic" % "3.0.5",
+    "org.scalatest" %% "scalatest" % "3.0.5" % "test"
+  ),
   scalacOptions ++= Seq("-feature"),
 )
 

@@ -5,6 +5,8 @@ var gamePlayId;
 
 var targetableList = ["attack"];
 
+var waitTree;
+
 function checkTargetable(type) {
     if (type == "attack") return true;
     else return false;
@@ -17,20 +19,82 @@ function checkTargetable(type) {
     // return false;
 }
 
+function attachNode(thrownCard, atId, node) {
+    if (atId == -1 && $("#cardWait").html() == "") {
+        waitTree = {
+            playedCard: {
+                card: thrownCard,
+                whoPlayedId: myPlayerId,
+                type: "PlayedCardInTree",
+                parentCardId: atId
+            },
+            childrenNodes: []
+        };
+    } else
+    if (atId == node.playedCard.card.id) {
+        node.childrenNodes.push({
+            playedCard: {
+                card: thrownCard,
+                whoPlayedId: myPlayerId,
+                type: "PlayedCardInTree",
+                parentCardId: atId
+            },
+            childrenNodes: []
+        });
+    } else {
+        node.childrenNodes.forEach((el) => {
+            attachNode(thrownCard, atId, el);
+        });
+    }
+    displayCardWait();
+}
+
 function addDroppable() {
     $(".playHere").droppable({
         drop: function(event, ui) {
             var thrownIdx = ui.draggable.attr("data-card-idx");
             var atId = parseInt($(this).attr("data-drop-id"));
-            var thrownCard = getCardByIdx(thrownIdx);
-            var isTargetable = checkTargetable(thrownCard.type);
-            if (isTargetable) {
-                handleTargetableRequest(thrownCard, atId);
+            if (thrownIdx == -1) {
+                playCardWait(atId);
+                $("#cardWait").toggle();
             } else {
-                sendPlayedRequest(thrownCard, atId, -1);
+                var thrownCard = getCardByIdx(thrownIdx);
+                var isTargetable = checkTargetable(thrownCard.type);
+                if (isTargetable) {
+                    handleTargetableRequest(thrownCard, atId, false);
+                } else {
+                    sendPlayedRequest(thrownCard, atId, -1);
+                }
             }
         }
     });
+    $(".playWait").droppable({
+        drop: function(event, ui) {
+            var thrownIdx = ui.draggable.attr("data-card-idx");
+            var atId = parseInt($(this).attr("data-wait-id"));
+            var thrownCard = getCardByIdx(thrownIdx);
+            var isTargetable = checkTargetable(thrownCard.type);
+            if (isTargetable) {
+                handleTargetableRequest(thrownCard, atId, true);
+            } else {
+                attachNode(thrownCard, atId, waitTree);
+            }
+        }
+
+    });
+}
+
+function displayCardWait() {
+    $("#cardWait").html("");
+    buildTree(waitTree, $("#cardWait"), "#ffff00", true);
+    drag = $("#cardWait img:nth-of-type(1)");
+    drag.draggable({
+        revert: true,
+        containment: "body",
+        appendTo: 'body',
+        scroll: false,
+    });
+    drag.attr("data-card-idx", "-1");
 }
 
 function displayInit() {
@@ -39,16 +103,34 @@ function displayInit() {
     $("#NoActionButton").click(function() {
         sendNoActionRequest();
     });
+    $("#ToggleCardWait").click(function() {
+        $("#cardWait").toggle();
+        $("#cardWait").html("");
+    });
+    $("#cardWait").hide();
     addDroppable();
 }
 
-function handleTargetableRequest(thrownCard, atId) {
+function handleTargetableRequest(thrownCard, atId, cardWait) {
     $("#targetChooser").show();
 
     $(".target").click(function() {
         var targetId = $(this).attr("data-target-id");
         targetId = parseInt(targetId);
-        sendPlayedRequest(thrownCard, atId, targetId);
+        if (!cardWait) {
+            sendPlayedRequest(thrownCard, atId, targetId);
+        } else {
+            waitTree = {
+                playedCard: {
+                    card: thrownCard,
+                    whoPlayedId: myPlayerId,
+                    targetPlayerId: targetId,
+                    type: "PlayedStartingCardAtPlayer"
+                },
+                childrenNodes: []
+            };
+            displayCardWait();
+        }
         $("#targetChooser").hide();
         $(".target").unbind();
     });
@@ -56,18 +138,28 @@ function handleTargetableRequest(thrownCard, atId) {
 
 function updateView() {
     $("#tree").hide();
-    if (!('cardTree' in gameState) &&
+    if (gameState.cardTrees.length == 0 &&
         gameState.playerIdOnMove == myPlayerId) {
         $("#beginAction").show();
     } else {
         $("#beginAction").hide();
     }
 
-    if ('cardTree' in gameState) {
+    // if ('cardTree' in gameState) {
+    //     $("#tree").html("");
+    //     $("#tree").show();
+    //     buildTree(gameState.cardTree, $("#tree"), "#ffff00");
+    // }
+
+    if (gameState.cardTrees.length > 0) {
         $("#tree").html("");
         $("#tree").show();
-        buildTree(gameState.cardTree, $("#tree"), "#ffff00");
+        gameState.cardTrees.forEach((tree) => {
+            buildTree(tree, $("#tree"), "#ffff00");
+        });
     }
+
+
 
     addPlayersStats(gameState.players);
     addHandCards(gameState.players[myPlayerId - 1].hand);
@@ -104,10 +196,10 @@ function addHandCards(cards) {
     });
 }
 
-function buildTree(node, div, color) {
+function buildTree(node, div, color, cardWait = false) {
     div.css("background-color", color);
     div.append('<div class="cardContainer"></div>')
-    displayCard(node.playedCard, div.children().last(), color);
+    displayCard(node.playedCard, div.children().last(), color, cardWait);
 
     var newColor = lightenDarkenColor(color, -30); //TODO
     div.append('<div class="childrenContainer"></div>');
@@ -116,17 +208,24 @@ function buildTree(node, div, color) {
     node.childrenNodes.forEach(function(child) {
         childrenContainer.append('<div class="node"></div>');
         newDiv = childrenContainer.children().last();
-        buildTree(child, newDiv, newColor);
+        buildTree(child, newDiv, newColor, cardWait);
     });
 
     addDroppable();
 }
 
-function displayCard(playedCard, div, color) {
-    card = playedCard.card;
-    html = '<span class="playerId"></span>';
-    html += '<img class="imgAtTable playHere" data-drop-id="' + card.id + '" src="/assets/cards/' + card.type + '.jpg">';
-    html += '<span class="playerId"></span>';
+function displayCard(pC, div, color, cardWait) {
+    card = pC.card;
+    html = '<span class="playerId">' + pC.whoPlayedId + '</span>';
+    dataType = cardWait ? 'wait' : 'drop';
+    dropClass = cardWait ? 'playWait' : 'playHere';
+    html += '<img class="imgAtTable ' + dropClass + '" data-' + dataType + '-id="' + card.id + '" src="/assets/cards/' + card.type + '.jpg">';
+    if (pC.hasOwnProperty('targetPlayerId')) {
+        target = pC.targetPlayerId;
+    } else {
+        target = "";
+    }
+    html += '<span class="playerId"> ' + target + ' </span>';
     div.append(html);
 
 }

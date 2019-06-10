@@ -92,6 +92,20 @@ function sendNoActionRequest() {
     doSend(JSON.stringify(msg));
 }
 
+function playCardWait(atId) {
+    var msg = {
+        msgType: "PlayedCardsRequest",
+        gamePlayId: gamePlayId,
+        playerId: myPlayerId,
+        updateId: updateId,
+        played: waitTree
+    };
+    if (atId != -1) {
+        msg.played.playedCard.parentCardId = atId;
+    }
+    doSend(JSON.stringify(msg));
+}
+
 
 //HELPERS
 

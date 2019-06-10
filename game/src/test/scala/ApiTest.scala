@@ -11,7 +11,7 @@ import game.core.TreeWithCards
 import game.core.CardInnerNode
 import game.core.Table
 
-import game.standardtrach.actions.buildersFactory
+import game.standardtrach.actions.{ buildersFactory, PlayingCards }
 
 class ApiTest extends FunSuite {
 
@@ -42,7 +42,7 @@ class ApiTest extends FunSuite {
     assert(fromJson.get == gameState)
 
     // p1 plays his ac at p2
-    val (state1, _) = Table.attach(TreeWithCards(PlayedCardAtPlayer(ac, p1, p2)), state)
+    val state1 = new PlayingCards(TreeWithCards(PlayedCardAtPlayer(ac, p1, p2)), p1)(state).state
     val gameState1 = toGameStateModel(state1)
     
     val json1 = Json.parse("""
@@ -68,7 +68,7 @@ class ApiTest extends FunSuite {
     assert(fromJson1.get == gameState1)
 
     // p1 increases priority of attack
-    val (state2, _) = Table.attach(CardInnerNode(PlayedCardInTree(pic, p1, ac)), state1)
+    val state2 = new PlayingCards(CardInnerNode(PlayedCardInTree(pic, p1, ac)), p1)(state1).state
 
     val gameState2 = toGameStateModel(state2)
     val gameStateJson2 = Json.toJson(gameState2)

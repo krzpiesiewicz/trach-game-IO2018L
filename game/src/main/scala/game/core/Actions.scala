@@ -61,7 +61,7 @@ package object actions {
   /**
    * NoneAction changes nothing in game state.
    */
-  class NoneAction(val state: GameState) extends Action
+  case class NoneAction(state: GameState) extends Action
   
   /**
    * EmptyTransformer changes nothing in action or another transformer.

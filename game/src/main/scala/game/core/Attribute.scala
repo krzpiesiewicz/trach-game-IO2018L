@@ -60,24 +60,32 @@ trait TargetChooser extends PlayerAttribute {
   def playersForTargets(circleOfPlayers: CircleOfPlayers): Map[PlayerId, Player]
 }
 
-trait CoveredCardsStack extends GlobalAttribute {
-  def cards: Seq[Card]
+/** Attribute describing two cards stacks:
+ *  - discarded cards stack (used cards),
+ *  - covered cards stack (cards ready to be used in the game).
+ */
+trait CardsStacks extends GlobalAttribute {
+  /**
+   * Cards on the discarded cards stack.
+   */
+  def discardedCards: Seq[Card]
   
   /**
-   * Pops a covered card from the stack.
-   * If stack is not empty it returns Some(poppedCard, restOfStack) otherwise it returns None.
+   * Cards on the covered cards stack.  
    */
-  def pop: Option[(Card, CoveredCardsStack)]
-}
-
-trait DiscardedCardsStack extends GlobalAttribute {
-  def cards: Seq[Card]
+  def coveredCards: Seq[Card]
   
   /**
-   * Pushes a @card onto the stack.
-   * Returns the stack with the pushed @card.
+   * Pops a card from the covered cards stack.
+   * If stack is not empty it returns Some(poppedCard, newCardsStacks) otherwise it returns None.
    */
-  def push(card: Card): DiscardedCardsStack
+  def popCovered: Option[(Card, CardsStacks)]
+  
+  /**
+   * Pushes a @card onto the discarded stack.
+   * Returns CardsStacks with @card pushed on the discarded cards stack.
+   */
+  def pushDiscarded(card: Card): CardsStacks
 }
 
 trait GlobalActiveCards extends GlobalAttribute {
@@ -100,10 +108,16 @@ trait RoundsManager extends GlobalAttribute {
   def currentPlayer: Player
   def nextPlayer(circleOfPlayers: CircleOfPlayers): Player
   
+  def isBeginingOfTheRound: Boolean
+  
   /**
    * Returns RoundsManager with next player round.
    */
   def withNextRound(circleOfPlayers: CircleOfPlayers): RoundsManager
+  
+  /** Returns RoundManager with isBeginingOfTheRound = false.
+   */
+  def roundStarted: RoundsManager
 }
 
 /**

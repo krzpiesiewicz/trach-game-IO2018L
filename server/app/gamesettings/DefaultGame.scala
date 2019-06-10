@@ -67,8 +67,7 @@ object DefaultGame {
     val state = NormalState(new DefaultAttributesSet(Seq(
         DefaultPlayers(circle),
         DefaultAllCards(cards),
-        DefaultCoveredCardsStack(coveredCards.toVector),
-        DefaultDiscardedCardsStack(Vector.empty),
+        DefaultCardsStacks(Vector.empty, coveredCards.toVector),
         DefaultGlobalActiveCards(Vector.empty),
         DefaultRoundsManager(p1),
         CardTrees()

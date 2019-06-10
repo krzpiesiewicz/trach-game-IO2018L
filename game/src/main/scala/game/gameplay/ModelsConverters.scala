@@ -60,8 +60,8 @@ package object modelsconverters {
 
   implicit def toGameStateModel(state: game.core.GameState): GameState = GameState(
     state.playersMap.values.map(toPlayerModel(_)).toSeq,
-    state.coveredCardsStack.cards,
-    state.discardedCardsStack.cards,
+    state.cardsStacks.coveredCards,
+    state.cardsStacks.discardedCards,
     state.globalActiveCards.cards,
     state.cardTrees.trees,
     state.roundsManager.roundId,
@@ -110,7 +110,4 @@ package object modelsconverters {
     case tree: CardTree => toTreeWithCards(tree)
     case node: CardNode => toCardInnerNode(node)
   }
-
-  implicit def toHandExchange(hem: HandExchangeRequestMsg)(implicit state: game.core.GameState): game.core.HandExchange =
-    game.core.HandExchange(state.player(hem.playerId), hem.cardsIdsToExchange.map(state.card(_)))
 }

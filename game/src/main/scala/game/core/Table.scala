@@ -6,100 +6,37 @@ import game.core.actions._
  * Table gives functions for building trees of cards and evaluating them to game state.
  */
 object Table {
+  
   /**
-   * Tries to attach subtree @cn to a proper tree or add @cn as new tree if @cn is rooted (it is of type TreeWithCards).
-   * In case of success it returns (newState, true) where newState is the @state with the subtree @cn attached and
-   * all @cn's non-virtual cards are removed from player's hand. Otherwise it returns (@state, false).
+   * Finds a tree in the given @stream of (treeId, tree) that is the @tree where card node @cardNode should be attached
+   * and attaches @cardNode to the found @tree.
+   * If such a @tree is found in the @stream then it returns (@treeId, @tree).
+   * Otherwise it throws an exception.
    */
-  def attach(cn: CardNode, state: GameState): (GameState, Boolean) = {
-    val notAttached = (state, false)
-    
-    try {
-      val (treeId, newTrees) = cn match {
-        case newTree: TreeWithCards =>
-          // if the card node @cn is a root node (tree with cards) then it should be added as a new tree
-          val treeId = if (state.cardTrees.trees.keySet.isEmpty) 1 else state.cardTrees.trees.keySet.max + 1
-          (treeId, state.cardTrees.trees + (treeId -> newTree))
-        case _: CardInnerNode =>
-          /**
-           * Finds a tree where card node @cn should be attached and attaches @cn to the tree.
-           * Otherwise it throws an exception
-           */
-          def findTreeAndAttach(s: Stream[(Int, TreeWithCards)]): (Int, TreeWithCards) = s match {
-            case Stream.Empty => throw new Exception("A tree where card node should be attached not found")
-            case (treeId, tree) #:: tail => try {
-              (treeId, tree.attachSubtree(cn))
-            } catch {
-              case e: Exception => findTreeAndAttach(tail)
-            }
-          }
-          
-          val (treeId, newTree) = findTreeAndAttach(state.cardTrees.trees.toStream)
-          // Replace the found tree with @newTree
-          (treeId, state.cardTrees.trees + (treeId -> newTree))
-        }
-      val stateWithPlayerCardsRemoved = cn.playedCards.foldLeft(state) {
-        (state, pc) => GameState.removeCardFromPlayersHand(pc.player, pc.card, state)
-      }
-      val stateWithCardNodeAdded = stateWithPlayerCardsRemoved transformed {
-        case cardTrees: CardTrees => CardTrees(newTrees)
-      }
-      
-      evaluate(Some((treeId, cn)), stateWithCardNodeAdded) /* throws an exception if one of nodes of @cn subtree
-        cannot be evaluated to an action/transformer or it is not applicable. */
-      (stateWithCardNodeAdded, true)
+  def findTreeAndAttach(cardNode: CardNode, stream: Stream[(Int, TreeWithCards)]): (Int, TreeWithCards) = stream match {
+    case Stream.Empty => throw new Exception("A tree where card node should be attached not found")
+    case (treeId, tree) #:: tail => try {
+      (treeId, tree.attachSubtree(cardNode))
     } catch {
-      case e: Exception => notAttached
+      case e: Exception => findTreeAndAttach(cardNode, tail)
     }
-  }
-  
-  /**
-   * New game state created from @state by application of actions evaluated from card trees.
-   * All non-virtual cards from card trees are put on discarded stack.
-   */
-  def evaluate(state: GameState): GameState = evaluate(None, state)
-  
-  /**
-   * Evaluates all card trees from game @state and applies their actions to the @state.
-   * Puts all cards non-virtual cards from trees on discarded card stack.
-   */
-  private def evaluate(treeIdAndAddedSubtreeOpt: Option[(Int, CardNode)], state: GameState): GameState = {
-    /**
-     * Recursively removes and evaluates the first card tree until cardTrees map empty.
-     */
-    def recursivelyEvaluateFirstTree(state: GameState): GameState = {
-      if (state.cardTrees.trees.isEmpty)
-        state
-      else {
-        val (treeId, tree) = state.cardTrees.trees.head
-        val addedSubtreeOpt = treeIdAndAddedSubtreeOpt match {
-          case Some((`treeId`, subtree)) => Some(subtree)
-          case _ => None
-        }
-        val stateWithoutFirstTree = state transformed {
-          case cardTrees: CardTrees => CardTrees(state.cardTrees.trees.tail)
-        }
-        val evaluatedState = evaluateTree(addedSubtreeOpt, tree, stateWithoutFirstTree)
-        // put all cards from the @tree on discarded cards stack
-        val newState = tree.playedCards.foldLeft(evaluatedState) { case (state, pc) =>
-          GameState.putCardOnDiscardedStack(pc.card, state)
-        }
-        recursivelyEvaluateFirstTree(newState)
-      }
-    }
-    
-    recursivelyEvaluateFirstTree(state)
   }
 
   /**
-   * Evaluates the @tree in the given game @state. If @addedSubtreeOpt is Some(@addedSubtree) then:
-   * 1. It verifies that all nodes of subtree @addedSubtree was successfully evaluated to action (in root case)
-   * or transformer (in inner node case).
-   * 2. It verifies that for every node @n of subtree @addedSubtree, action/transformer related to @n was
-   * applicated to the whole @tree evaluation.
-   * Throws an exception if one of the points 1., 2. is not satisfied.
+   * Evaluates the @tree to an action in the given game @state.
+   * 
+   * If @addedSubtreeOpt is Some(@addedSubtree) then:
+   *   1. It verifies that all nodes of subtree @addedSubtree was successfully evaluated to action (in root case)
+   *      or transformer (in inner node case).
+   * 
+   *   2. It verifies that for every node @n of subtree @addedSubtree, action/transformer related to @n was
+   *      applicated to the whole @tree evaluation.
+   * 
+   *   It throws an exception if one of the points 1., 2. is not satisfied.
+   *   
+   * So if @addedSubtreeOpt is None, then an exception cannot be thrown.
    */
-  private def evaluateTree(addedSubtreeOpt: Option[CardNode], tree: TreeOfCards, state: GameState): GameState = {
+  def evaluateTree(addedSubtreeOpt: Option[CardNode], tree: TreeOfCards, state: GameState): Action = {
     
     def isRootOfAddedSubtree(cn: CardNode) = addedSubtreeOpt match {
       case None => false
@@ -140,10 +77,10 @@ object Table {
     }
 
     tree match {
-      case EmptyTree => state
+      case EmptyTree => NoneAction(state)
       case tree: TreeWithCards =>
         val wholeTreeIsAdded = isRootOfAddedSubtree(tree)
-        val evaluatedState = tree.actionBuilder(state) match {
+        val action = tree.actionBuilder(state) match {
           case Some(action) =>
             val childrenTransformers = tree.children.map { child =>
               val isNodeOfAddedSubtree = wholeTreeIsAdded || isRootOfAddedSubtree(child)
@@ -163,13 +100,13 @@ object Table {
                   case None => action // if it isNodeOfAddedSubtree, an exception was thrown in recursive call of evalTree.
                 }
             }
-            newAction.state
+            newAction
           case None =>
             if (wholeTreeIsAdded)
               throw new Exception("Root node action not build successfully")
-            state
+            NoneAction(state)
         }
-        evaluatedState
+        action
     }
   }
 }

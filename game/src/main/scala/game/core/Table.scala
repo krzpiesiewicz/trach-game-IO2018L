@@ -2,17 +2,18 @@ package game.core
 
 import game.core.actions._
 
-/**
- * Table gives functions for building trees of cards and evaluating them to game state.
- */
+/** Has functions for building trees of cards and evaluating them to game state.
+  */
 object Table {
-  
-  /**
-   * Finds a tree in the given @param stream of (treeId, tree) that is the @tree where card node @param cardNode should be attached
-   * and attaches @param cardNode to the found @param tree.
-   * If such a @param tree is found in the @stream then it returns (@param treeId, @param tree).
-   * Otherwise it throws an exception.
-   */
+
+  /** Finds a pair {@code (treeId, tree)} in the given {@code stream} where card node {@card cardNode} should be attached
+    * and attaches {@code cardNode} to the found {@code tree}.
+    * If such a {@code tree} is not found, it throws an exception.
+    *
+    * @param cardNode card node to attach
+    * @param stream   stream of pairs {@code (treeId, treeWithCards)}.
+    * @return {@code (treeId, newTree)} where {@code newTree} is the found {@code tree} with {@code cardNode} attached.
+    */
   def findTreeAndAttach(cardNode: CardNode, stream: Stream[(Int, TreeWithCards)]): (Int, TreeWithCards) = stream match {
     case Stream.Empty => throw new Exception("A tree where card node should be attached not found")
     case (treeId, tree) #:: tail => try {
@@ -22,22 +23,21 @@ object Table {
     }
   }
 
-  /**
-   * Evaluates the @tree to an action in the given game @state.
-   * 
-   * If @addedSubtreeOpt is Some(@addedSubtree) then:
-   *   1. It verifies that all nodes of subtree @addedSubtree was successfully evaluated to action (in root case)
-   *      or transformer (in inner node case).
-   * 
-   *   2. It verifies that for every node @n of subtree @addedSubtree, action/transformer related to @n was
-   *      applicated to the whole @tree evaluation.
-   * 
-   *   It throws an exception if one of the points 1., 2. is not satisfied.
-   *   
-   * So if @addedSubtreeOpt is None, then an exception cannot be thrown.
-   */
+  /** Evaluates the {@code tree} to an action in the given game {@code state}.
+    *
+    * If {@code addedSubtreeOpt} is {@code Some(@addedSubtree)} then:
+    *   1. It verifies that all nodes of subtree {@code addedSubtree} was successfully evaluated to an action (in root case)
+    * or a transformer (in inner node case).
+    *
+    *   2. It verifies that for every node {@code n} of subtree {@code addedSubtree}, action/transformer related to {@code n} was
+    * applied to the whole {@code tree} evaluation.
+    *
+    * It throws an exception if one of the points 1., 2. is not satisfied.
+    *
+    * So if {@code addedSubtreeOpt} is {@code None}, then an exception cannot be thrown.
+    */
   def evaluateTree(addedSubtreeOpt: Option[CardNode], tree: TreeOfCards, state: GameState): Action = {
-    
+
     def isRootOfAddedSubtree(cn: CardNode) = addedSubtreeOpt match {
       case None => false
       case Some(addedSubtree) => cn.playedCard.card == addedSubtree.playedCard.card
@@ -49,12 +49,12 @@ object Table {
           val childrenAndTransformersOpts = node.children.map { child =>
             val childTransformerOpt = evalTree(child, isNodeOfAddedSubtree || isRootOfAddedSubtree(child))
             (child, childTransformerOpt)
-            }
+          }
 
           // transform the parent by all the children transformers.
           val newTransformer = childrenAndTransformersOpts.foldLeft(transformer) {
             case (parentTransformer: ActionTransformer,
-                (child: CardInnerNode, childTransformerOpt: Option[ActionTransformer])) =>
+            (child: CardInnerNode, childTransformerOpt: Option[ActionTransformer])) =>
               childTransformerOpt match {
                 case Some(childTransformer) =>
                   // check if childTransformer is applicable to the parent.

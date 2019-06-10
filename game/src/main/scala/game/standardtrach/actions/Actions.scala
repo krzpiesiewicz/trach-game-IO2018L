@@ -12,6 +12,7 @@ import game.core.PlayedCard
 
 import game.standardtrach.actions.attacks._
 
+/** Provides implementations of actions relating to cards of the standard version of Trach Game */
 package object actions {
 
   implicit object buildersFactory extends BuildersFactory {

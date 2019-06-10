@@ -3,6 +3,7 @@ package game.core
 import game.Logging.logger
 import scala.reflect.ClassTag
 
+/** Provides traits relating to actions and transformers */
 package object actions {
 
   /**

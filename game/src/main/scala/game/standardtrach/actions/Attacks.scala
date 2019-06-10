@@ -8,6 +8,7 @@ import game.standardtrach.AttackCard
 import game.standardtrach.DefenceCard
 import game.standardtrach.MassedAttackCard
 
+/** Provides implementation of attacks and defences */
 package object attacks {
 
   /**

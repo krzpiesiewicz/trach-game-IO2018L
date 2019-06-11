@@ -3,6 +3,10 @@
 #include <iostream>
 #include "MainTableUI.h"
 
+/**
+ * (function required by Qt for drag-drop system)
+ * @param event drag enter event to handle
+ */
 void MainTableUI::dragEnterEvent(QDragEnterEvent *event)
 {
     if (event->mimeData()->hasFormat("cardTreeToPlay"))
@@ -14,6 +18,10 @@ void MainTableUI::dragEnterEvent(QDragEnterEvent *event)
     }
 }
 
+/**
+ * (function required by Qt for drag-drop system)
+ * @param event drag Move event to handle
+ */
 void MainTableUI::dragMoveEvent(QDragMoveEvent *event)
 {
     if (event->mimeData()->hasFormat("cardTreeToPlay"))
@@ -25,6 +33,10 @@ void MainTableUI::dragMoveEvent(QDragMoveEvent *event)
     }
 }
 
+/**
+ * (function required by Qt for drag-drop system)
+ * @param event drop event to handle
+ */
 void MainTableUI::dropEvent(QDropEvent *event)
 {
     if (event->mimeData()->hasFormat("cardTreeToPlay"))

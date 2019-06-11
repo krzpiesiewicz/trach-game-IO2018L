@@ -5,26 +5,31 @@
 #include <string>
 #include <cpprest/json.h>
 
-using namespace std;
-using namespace web;
-
+/**
+ * request to start new multiplayer game
+ */
 class QuickMultiplayerGameRequest
 {
 public:
 
     QuickMultiplayerGameRequest()
     {
-        obj = json::value();
-        obj["msgType"] = json::value("QuickMultiplayerGameRequest");
+        obj = web::json::value();
+        obj["msgType"] = web::json::value("QuickMultiplayerGameRequest");
     }
 
-    json::value obj;
-
-    string toString()
+    /**
+     *
+     * @return object serialized to JSON as string
+     */
+    std::string toString()
     {
         return obj.serialize();
     }
 
+private:
+
+    web::json::value obj;
 };
 
 

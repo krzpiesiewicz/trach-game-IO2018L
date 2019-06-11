@@ -6,14 +6,17 @@
 #include "Player.h"
 #include "CardTree.h"
 
-using namespace std;
-using namespace web;
-
+/**
+ * represents all data about current state of the game
+ */
 class GameState
 {
 public:
 
-    explicit GameState(json::value obj)
+    /**
+     * @param obj object to deserialize from
+     */
+    explicit GameState(web::json::value obj)
     {
         auto rawPlayers = obj["players"].as_array();
         for (auto& rawPlayer : rawPlayers)
@@ -21,26 +24,50 @@ public:
             players.emplace_back(rawPlayer);
         }
 
-        playerIdOnmove = obj["playerIdOnMove"].as_integer();
-        hasCardTree = obj.has_object_field("cardTree");
+        playerIdOnMove = obj["playerIdOnMove"].as_integer();
+        hasCardTree = obj["cardTrees"].as_array().size();
 
         if (hasCardTree)
         {
-            cardTree = new CardTree(obj["cardTree"]);
+            cardTree = new CardTree(obj["cardTrees"].as_array().at(0));
         }
     }
 
+    /**
+     * players that are currently playing the game
+     */
     std::vector<Player>players;
-    std::vector<Card>coveredCardsStack;
-    std::vector<Card>usedCardsStack;
-    std::vector<Card>tableActiveCards;
-    CardTree* cardTree;
-    bool hasCardTree;
-    bool hasPlannedEvaluation;
-    int roundId;
-    int playerIdOnmove;
-    string evaluationTime;
 
+    /**
+     * card tree that is on the table
+     */
+    CardTree* cardTree;
+
+    /**
+     * is there any card tree on the table
+     */
+    bool hasCardTree;
+
+    /**
+     * id of current round
+     */
+    int roundId;
+
+    /**
+     * player that currently has possibility to play cards
+     */
+    int playerIdOnMove;
+
+    /**
+     * time of next planned evaluation
+     */
+    std::string evaluationTime;
+
+    /**
+     *
+     * @param playerId id to look for
+     * @return found player
+     */
     Player* findPlayerById(int playerId)
     {
         return find_if(players.begin(),

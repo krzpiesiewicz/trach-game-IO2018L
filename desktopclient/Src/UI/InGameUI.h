@@ -13,6 +13,9 @@
 #include "../ServerConnection.h"
 #include "MainTableUI.h"
 
+/**
+ * main widget having all necessary game UI elements
+ */
 class InGameUI : public QWidget
 {
 Q_OBJECT
@@ -71,7 +74,7 @@ public slots:
         currentTree->setData(state);
         handUI->setData(state->findPlayerById(playerId)->hand);
         auto player = state->findPlayerById(playerId);
-        if (!state->hasCardTree && state->playerIdOnmove != player->id)
+        if (!state->hasCardTree && state->playerIdOnMove != player->id)
         {
             currentTree->disableThrowingCards();
         } else{

@@ -7,22 +7,47 @@
 #include "Card.h"
 #include <cpprest/json.h>
 
-using namespace web;
-using namespace std;
-
+/**
+ * represents single Played card played by player that is at top of the tree
+ */
 class PlayedStartingCard
 {
 public:
-    PlayedStartingCard(json::value obj)
+    /**
+     * @param obj object to deserialize from
+     */
+    PlayedStartingCard(web::json::value obj)
     {
         card = new Card(obj["card"]);
         whoPlayedId = obj["whoPlayedId"].as_integer();
+        targetPlayer = obj["type"].as_string() == "PlayedStartingCardAtPlayer";
+        if (targetPlayer)
+        {
+            targetId = obj["targetPlayerId"].as_integer();
+        } else {
+            targetId = obj["targetCardId"].as_integer();
+        }
     }
 
-    Card* card;
+    /**
+     * card this object represents
+     */
+    Card *card;
+
+    /**
+     * id of player who played this card
+     */
     int whoPlayedId;
+
+    /**
+     * id of current target
+     */
     int targetId;
-    int type;
+
+    /**
+     * is current target a player
+     */
+    bool targetPlayer;
 };
 
 

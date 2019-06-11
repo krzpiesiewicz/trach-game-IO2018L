@@ -5,18 +5,18 @@
 #include <cpprest/json.h>
 #include <Src/Core/GameState.h>
 
-using namespace std;
-using namespace web;
-
+/**
+ * response from server with all data about current state of the game
+ */
 class GameStateUpdate
 {
 public:
-    explicit GameStateUpdate(string json)
+    explicit GameStateUpdate(std::string json)
     {
-        auto obj = json::value::parse(json);
+        auto obj = web::json::value::parse(json);
         gameplayId = obj["gamePlayId"].as_integer();
         updateId = obj["updateId"].as_integer();
-        gameState = make_shared<GameState>(obj["gameState"]);
+        gameState = std::make_shared<GameState>(obj["gameState"]);
 
         hasPlannedEvaluation = obj.has_object_field("timeOfCommingEvaluation");
         if (hasPlannedEvaluation)
@@ -25,11 +25,30 @@ public:
         }
     }
 
+    /**
+     * id of gameplay
+     */
     int gameplayId;
+
+    /**
+     * id of this update
+     */
     int updateId;
-    shared_ptr<GameState> gameState;
+
+    /**
+     * current gameState
+     */
+    std::shared_ptr<GameState> gameState;
+
+    /**
+     * is any evaluation in plans
+     */
     bool hasPlannedEvaluation;
-    string evaluationTime;
+
+    /**
+     * when is evaluation planned or empty string
+     */
+    std::string evaluationTime;
 
 };
 

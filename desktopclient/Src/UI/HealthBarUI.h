@@ -6,12 +6,15 @@
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QLabel>
 
+/**
+ * widget of a player health bar
+ */
 class HealthBarUI : public QWidget
 {
 
 private:
 
-    vector<QLabel *> hearts;
+    std::vector<QLabel *> hearts;
 
 public:
     HealthBarUI(QWidget *parent): QWidget(parent) {}

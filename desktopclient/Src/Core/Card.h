@@ -5,28 +5,36 @@
 #include <string>
 #include <cpprest/json.h>
 
-using namespace std;
-using namespace web;
-
+/**
+ * single card from deck
+ */
 class Card
 {
 public:
 
-    explicit Card(json::value obj)
+    /**
+     * @param obj object to deserialize from
+     */
+    explicit Card(web::json::value obj)
     {
         id = obj["id"].as_integer();
         type = obj["type"].as_string();
     }
 
-    json::value toJson()
+    /**
+     * serializes object to JSON
+     * @returns object serialized to string in JSON format
+     */
+    web::json::value toJson()
     {
-        json::value result;
+        web::json::value result;
         result["id"] = id;
-        result["type"] = json::value(type);
+        result["type"] = web::json::value(type);
         return result;
     }
 
     int id;
+
     std::string type;
 };
 

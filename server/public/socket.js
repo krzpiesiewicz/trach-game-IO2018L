@@ -1,7 +1,7 @@
 /**
  * Global variables needed for estabilishing connection
  */
-var wsUri = "ws://localhost:9000/ws";
+var wsUri = "ws://10.1.1.31:9000/ws";
 var websocket;
 
 /**

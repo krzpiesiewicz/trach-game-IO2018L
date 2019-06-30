@@ -1,5 +1,8 @@
 # trach-scala-IO2018L
-Multiplayer card game with bots based on an existing card game. System designed and partially implemented as a team project in Software Engineering course at MIMUW in 2019. https://youtu.be/yfCIdyFDM8w
+Multiplayer card game with bots based on an existing card game. System designed and partially implemented as a team project in Software Engineering course at MIMUW in 2019. Video: https://youtu.be/yfCIdyFDM8w.
+
+Technologies: Scala (PlayFramework 2.6 , Akka), JS, C++ (Qt5).
+
 
 <table>
   <tr>

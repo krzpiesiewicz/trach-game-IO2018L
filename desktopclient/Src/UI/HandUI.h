@@ -11,21 +11,24 @@ class QDragEnterEvent;
 
 class QDropEvent;
 
+/**
+ * widget of a player's hand
+ */
 class HandUI : public QFrame
 {
 
 
 public:
-    HandUI(QWidget *parent, vector<Card> cards) : QFrame(parent)
+    HandUI(QWidget *parent, std::vector<Card> cards) : QFrame(parent)
     {
-        sort(cards.begin(), cards.end(), [](Card &a, Card &b) { return a.id < b.id; });
+        std::sort(cards.begin(), cards.end(), [](Card &a, Card &b) { return a.id < b.id; });
         setMinimumWidth(cards.size() * 120);
         setMinimumHeight(200);
         setAcceptDrops(true);
         setData(cards);
     }
 
-    void setData(vector<Card> cards)
+    void setData(std::vector<Card> cards)
     {
         sort(cards.begin(), cards.end(), [](Card &a, Card &b) { return a.id < b.id; });
 
@@ -82,7 +85,7 @@ private:
         cardsUI.clear();
     }
 
-    vector<CardUI *> cardsUI;
+    std::vector<CardUI *> cardsUI;
 };
 
 

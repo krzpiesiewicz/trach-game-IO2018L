@@ -85,3 +85,5 @@ object Card {
 trait CardWithPriority extends Card {
   val priority: Int
 }
+
+trait VirtualCard extends Card

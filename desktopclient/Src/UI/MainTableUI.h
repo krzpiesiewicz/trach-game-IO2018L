@@ -40,7 +40,18 @@ public:
         painter.setPen(pen);
         painter.drawPolygon(points, 4);
         painter.setFont(QFont("Arial", 30));
-        painter.drawText(rect(), Qt::AlignCenter, "Aktualny Stół");
+        QString targetString = "";
+        if (state -> hasCardTree)
+        {
+            auto* card = state -> cardTree ->playedCard;
+            if (card -> targetPlayer)
+            {
+                auto id = card ->targetId;
+                auto* player = state->findPlayerById(id);
+                targetString = QString::fromStdString("(Celem jest " + player ->name + ")\n");
+            }
+        }
+        painter.drawText(rect(), Qt::AlignCenter, "Aktualny Stół\n" + targetString);
 
         QPen background;
         background.setWidth(14);
@@ -54,6 +65,7 @@ public:
 
     void setData(GameState *state)
     {
+        this->state = state;
         clearCards();
         if (state->hasCardTree)
         {
@@ -72,7 +84,7 @@ public:
                 id+= width;
             }
             auto totalWidth = id;
-            cardTree[0]->move(offset + QPoint( 62.5 * max(0,(totalWidth - 1)), 0));
+            cardTree[0]->move(offset + QPoint( 62.5 * std::max(0,(totalWidth - 1)), 0));
             id = 0;
 
             for (auto& child : state->cardTree->childrenNodes)
@@ -80,10 +92,27 @@ public:
                 auto width = getSubTreeWidth(child);
                 auto cardPosition = offset + QPoint(125 * id + 62.5 * (width - 1), cardSize.y());
                 addSubTree(child, cardPosition - QPoint( 62.5 * (width - 1), 0), cardPosition + cardCenter );
-                edges.emplace_back(cardPosition + cardCenter, cardCenter + QPoint( 62.5 * max(0,(totalWidth - 1)), 0));
+                edges.emplace_back(cardPosition + cardCenter, cardCenter + QPoint( 62.5 * std::max(0,(totalWidth - 1)), 0));
                 id += width;
             }
         }
+    }
+
+private:
+    GameState* state;
+    ServerConnection *connection;
+    std::vector<CardUI *> activeCards;
+    std::vector<CardUI *> cardTree;
+    std::vector<std::pair<QPoint,QPoint>>edges;
+
+    int getSubTreeWidth(CardNode& node)
+    {
+        int sumOfWidths = 0;
+        for (auto& child : node.childrenNodes)
+        {
+            sumOfWidths += getSubTreeWidth(child);
+        }
+        return std::max(1, sumOfWidths);
     }
 
     void addSubTree(CardNode& node, QPoint position, QPoint previousCardCenter)
@@ -106,22 +135,6 @@ public:
             id += width;
         }
     }
-
-    int getSubTreeWidth(CardNode& node)
-    {
-        int sumOfWidths = 0;
-        for (auto& child : node.childrenNodes)
-        {
-            sumOfWidths += getSubTreeWidth(child);
-        }
-        return max(1, sumOfWidths);
-    }
-
-private:
-    ServerConnection *connection;
-    vector<CardUI *> activeCards;
-    vector<CardUI *> cardTree;
-    vector<pair<QPoint,QPoint>>edges;
 
     void drawSubTree(CardNode *node)
     {

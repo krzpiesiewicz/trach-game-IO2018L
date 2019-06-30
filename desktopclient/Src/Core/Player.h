@@ -7,14 +7,17 @@
 #include <vector>
 #include "Card.h"
 
-using namespace std;
-using namespace web;
-
+/**
+ * represents all data of a signle player
+ */
 class Player
 {
 public:
 
-    explicit Player(json::value obj)
+    /**
+     * @param obj object to deserialize from
+     */
+    explicit Player(web::json::value obj)
     {
         id = obj["id"].as_integer();
         name = obj["name"].as_string();
@@ -29,12 +32,36 @@ public:
         }
     }
 
+    /**
+     * player id
+     */
     int id;
+
+    /**
+     * player name
+     */
     std::string name;
+
+    /**
+     * current health level
+     */
     int health;
+
+    /**
+     * player's current hand
+     */
     std::vector<Card> hand;
+
+    /**
+     * player's active cards
+     */
     std::vector<Card> activeCards;
 
+    /**
+     * tries to find a card with given id among cards on players hand
+     * @param cardId id to look for
+     * @return found card
+     */
     Card *findCardById(int cardId)
     {
         return find_if(hand.begin(),

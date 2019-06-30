@@ -4,8 +4,6 @@ import game.core._
 import scala.collection.Seq
 import game.core.Card
 import game.core.CircleOfPlayers
-import game.core.CoveredCardsStack
-import game.core.DiscardedCardsStack
 import game.core.GlobalActiveCards
 import game.core.Hand
 import game.core.Health
@@ -18,14 +16,14 @@ import game.core.Card.CardId
 
 object DefaultAttributes {
 
-  case class DefaultHealth(val value: Int = 5, val maxValue: Int = 5) extends Health {
+  case class DefaultHealth(value: Int = 5, maxValue: Int = 5) extends Health {
 
     def getDamage(damageValue: Int) = new DefaultHealth(value - damageValue, maxValue)
     
     def changedHP(change: Int) = new DefaultHealth(math.max(0, math.min(maxValue, value + change)), maxValue)
   }
 
-  case class DefaultHand(val maxCards: Int = 5, val cards: Seq[Card]) extends Hand {
+  case class DefaultHand(maxCards: Int = 5, cards: Seq[Card]) extends Hand {
 
     def replacedCard(oldCard: Card, newCardOpt: Option[Card]) = new DefaultHand(
       maxCards,
@@ -35,24 +33,37 @@ object DefaultAttributes {
       })
   }
 
-  case class DefaultActiveCards(val cards: Seq[Card] = Seq.empty) extends PlayerActiveCards
+  case class DefaultActiveCards(cards: Seq[Card] = Seq.empty) extends PlayerActiveCards
 
   case class DefaultTargetChooser() extends TargetChooser {
 
     def playersForTargets(circleOfPlayers: CircleOfPlayers) = circleOfPlayers.playersMap
   }
 
-  case class DefaultCoveredCardsStack(val cards: Vector[Card]) extends CoveredCardsStack {
-
-    def pop = if (cards.isEmpty) None else Some(cards.head, new DefaultCoveredCardsStack(cards.drop(1)))
+  /** Attribute describing two cards stacks:
+   *  - discarded cards stack (used cards),
+   *  - covered cards stack (cards ready to be used in the game).
+   */
+  case class DefaultCardsStacks(discardedCards: Vector[Card], coveredCards: Vector[Card]) extends CardsStacks {
+    /**
+     * Pops a card from the covered cards stack.
+     * If stack is not empty it returns Some(poppedCard, newCardsStacks) otherwise it returns None.
+     */
+    def popCovered: Option[(Card, CardsStacks)] =
+      if (coveredCards.isEmpty)
+        None
+      else
+        Some(coveredCards.head, DefaultCardsStacks(discardedCards, coveredCards.drop(1)))
+    
+    /**
+     * Pushes a @card onto the discarded stack.
+     * Returns CardsStacks with @card pushed on the discarded cards stack.
+     */
+    def pushDiscarded(card: Card): CardsStacks =
+      DefaultCardsStacks(discardedCards.+:(card), coveredCards)
   }
-
-  case class DefaultDiscardedCardsStack(val cards: Vector[Card]) extends DiscardedCardsStack {
-
-    def push(card: Card) = new DefaultDiscardedCardsStack(cards.+:(card))
-  }
-
-  case class DefaultGlobalActiveCards(val cards: Vector[Card]) extends GlobalActiveCards
+  
+  case class DefaultGlobalActiveCards(cards: Vector[Card]) extends GlobalActiveCards
 
   case class DefaultAllCards(cardsMap: Map[CardId, Card]) extends AllCards
   
@@ -65,7 +76,10 @@ object DefaultAttributes {
     def updatePlayer(player: Player) = new DefaultPlayers(circleOfPlayers.updatePlayer(player))
   }
 
-  case class DefaultRoundsManager(val currentPlayer: Player, val roundId: Int = 1) extends RoundsManager {
+  case class DefaultRoundsManager(
+      currentPlayer: Player,
+      roundId: Int = 1,
+      isBeginingOfTheRound: Boolean = true) extends RoundsManager {
     
     def nextPlayer(circleOfPlayers: CircleOfPlayers): Player = {
       /**
@@ -85,6 +99,9 @@ object DefaultAttributes {
       nextAlive(currentPlayer)
     }
     
-    def withNextRound(circleOfPlayers: CircleOfPlayers) = DefaultRoundsManager(nextPlayer(circleOfPlayers), roundId + 1)
+    def withNextRound(circleOfPlayers: CircleOfPlayers) =
+      DefaultRoundsManager(nextPlayer(circleOfPlayers), roundId + 1)
+    
+    def roundStarted: RoundsManager = DefaultRoundsManager(currentPlayer, roundId, false)
   }
 }

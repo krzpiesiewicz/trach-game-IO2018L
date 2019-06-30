@@ -4,3 +4,4 @@ bin
 .*
 !/.gitignore
 desktopclient/Src/cmake-build-debug/*
+sbt

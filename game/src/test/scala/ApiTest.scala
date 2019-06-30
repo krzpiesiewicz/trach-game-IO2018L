@@ -1,9 +1,6 @@
 import org.scalatest.FunSuite
-import com.typesafe.scalalogging.Logger
 
 import play.api.libs.json._
-
-import game.Logging.logger
 
 import jvmapi.models._
 import game.gameplay.modelsconverters._
@@ -12,9 +9,9 @@ import game.core.PlayedCardAtPlayer
 import game.core.PlayedCardInTree
 import game.core.TreeWithCards
 import game.core.CardInnerNode
+import game.core.Table
 
-import game.standardtrach.actions.buildersFactory
-
+import game.standardtrach.actions.{ buildersFactory, PlayingCards }
 
 class ApiTest extends FunSuite {
 
@@ -23,7 +20,6 @@ class ApiTest extends FunSuite {
 
     val gameState = toGameStateModel(state)
     val gameStateJson = Json.toJson(gameState)
-    //    logger.info(gameStateJson.toString() + "\n")
 
     val json = Json.parse("""
 |{
@@ -34,6 +30,7 @@ class ApiTest extends FunSuite {
 |  "coveredCardsStack":[{"id":6,"type":"shelter"}],
 |  "usedCardsStack":[],
 |  "tableActiveCards":[],
+|  "cardTrees": [],
 |  "roundId":1,
 |  "playerIdOnMove":1
 |}""".stripMargin)
@@ -45,8 +42,8 @@ class ApiTest extends FunSuite {
     assert(fromJson.get == gameState)
 
     // p1 plays his ac at p2
-    val (table1, _) = table.attach(TreeWithCards(PlayedCardAtPlayer(ac, p1, p2)))
-    val gameState1 = toGameStateModel(table1)
+    val state1 = new PlayingCards(TreeWithCards(PlayedCardAtPlayer(ac, p1, p2)), p1)(state).state
+    val gameState1 = toGameStateModel(state1)
     
     val json1 = Json.parse("""
 |{
@@ -57,10 +54,11 @@ class ApiTest extends FunSuite {
 |  "coveredCardsStack":[],
 |  "usedCardsStack":[],
 |  "tableActiveCards":[],
-|  "cardTree": {
+|  "cardTrees": [{
+|    "id": 1,
 |    "playedCard": {"type":"PlayedStartingCardAtPlayer","card":{"id":1,"type":"attack"},"whoPlayedId":1,"targetPlayerId":2},
 |    "childrenNodes": []
-|  },
+|  }],
 |  "roundId":1,
 |  "playerIdOnMove":1
 |}""".stripMargin)
@@ -70,11 +68,10 @@ class ApiTest extends FunSuite {
     assert(fromJson1.get == gameState1)
 
     // p1 increases priority of attack
-    val (table2, _) = table1.attach(CardInnerNode(PlayedCardInTree(pic, p1, ac)))
+    val state2 = new PlayingCards(CardInnerNode(PlayedCardInTree(pic, p1, ac)), p1)(state1).state
 
-    val gameState2 = toGameStateModel(table2)
+    val gameState2 = toGameStateModel(state2)
     val gameStateJson2 = Json.toJson(gameState2)
-    //    logger.info(gameStateJson2.toString() + "\n")
 
     val json2 = Json.parse("""
 |{
@@ -85,12 +82,13 @@ class ApiTest extends FunSuite {
 |  "coveredCardsStack":[],
 |  "usedCardsStack":[],
 |  "tableActiveCards":[],
-|  "cardTree": {
+|  "cardTrees": [{
+|    "id": 1,
 |    "playedCard": {"type":"PlayedStartingCardAtPlayer","card":{"id":1,"type":"attack"},"whoPlayedId":1,"targetPlayerId":2},
 |    "childrenNodes": [
 |      {"playedCard":{"type":"PlayedCardInTree","card":{"id":4,"type":"priority_inc"},"whoPlayedId":1,"parentCardId":1},"childrenNodes":[]}
 |    ]
-|  },
+|  }],
 |  "roundId":1,
 |  "playerIdOnMove":1
 |}""".stripMargin)

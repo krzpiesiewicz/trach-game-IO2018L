@@ -16,56 +16,58 @@
 #include "cpprest/filestream.h"
 #include "Src/Core/Requests/QuickMultiplayerGameRequest.h"
 
-using namespace web;
 using namespace web::websockets::client;
 using namespace web::json;
-using namespace std;
 
 class ServerConnection
 {
 private:
     websocket_client client;
     int updateId;
-    Player* mainPlayer;
-    string nextEvaluationDate;
+    Player *mainPlayer;
+    std::string nextEvaluationDate;
 
-    string receive()
+    std::string receive()
     {
         try
         {
             auto message = client.receive().get();
             auto messageString = message.extract_string().get();
-            cout <<"received message: " << messageString<<"\n";
+            std::cout << "received message: " << messageString << "\n";
             return messageString;
         }
         catch (const websocket_exception &ex)
         {
-            cout << "receiving message failed\n";
-            cout << ex.what() << "\n";
+            std::cout << "receiving message failed\n";
+            std::cout << ex.what() << "\n";
             return "";
         }
     }
 
-    void sendMessage(const string &message)
+    void sendMessage(const std::string &message)
     {
         try
         {
             websocket_outgoing_message msg;
             msg.set_utf8_message(message);
             client.send(msg).get();
-            cout <<"sending message: " << message<<"\n";
+            std::cout << "sending message: " << message << "\n";
         }
         catch (const websocket_exception &ex)
         {
-            cout << "sending message: " << message << " failed\n";
-            cout << ex.what() << "\n";
+            std::cout << "sending message: " << message << " failed\n";
+            std::cout << ex.what() << "\n";
         }
     }
 
+    GameplayStateUpdate *gameplayState;
 public:
 
-    GameplayStateUpdate* gameplayState;
 
+/**
+ * waits for server to send new gameState
+ * @return latest gameState
+ */
     GameStateUpdate *getCurrentState()
     {
         GameStateRequest request(gameplayState->gameplayId);
@@ -76,81 +78,107 @@ public:
         return result;
     }
 
-    void playCardTreeAtCardTree(CardTreeInternalNode* tree, int targetCardId)
+    /**
+     *
+     * @return main player id
+     */
+    int getMainPlayerId() {
+        return gameplayState->playerId;
+    }
+
+    /**
+     * plays given tree at card with given id
+     * @param tree tree to play
+     * @param targetCardId what to play against
+     */
+    void playCardTreeAtCardTree(CardTreeInternalNode *tree, int targetCardId)
     {
         int playerId = gameplayState->playerId;
         int gameplayId = gameplayState->gameplayId;
-        string msgType = "PlayedCardsRequest";
+        std::string msgType = "PlayedCardsRequest";
 
-        json::value obj = json::value::parse("{}");
-        obj["playerId"] = json::value(playerId);
-        obj["gamePlayId"] = json::value(gameplayId);
-        obj["msgType"] = json::value(msgType);
-        obj["updateId"] = json::value(updateId);
+        web::json::value obj = web::json::value::parse("{}");
+        obj["playerId"] = web::json::value(playerId);
+        obj["gamePlayId"] = web::json::value(gameplayId);
+        obj["msgType"] = web::json::value(msgType);
+        obj["updateId"] = web::json::value(updateId);
 
-        json::value startingCard = json::value::parse("{}");;
-        startingCard["type"] = json::value("PlayedCardInTree");
+        web::json::value startingCard = web::json::value::parse("{}");;
+        startingCard["type"] = web::json::value("PlayedCardInTree");
         startingCard["card"] = mainPlayer->findCardById(tree->cardId)->toJson();
-        startingCard["whoPlayedId"] = json::value(playerId);
-        startingCard["parentCardId"] = json::value(targetCardId);
+        startingCard["whoPlayedId"] = web::json::value(playerId);
+        startingCard["parentCardId"] = web::json::value(targetCardId);
 
-        json::value cardNode = json::value::parse("{}");
+        web::json::value cardNode = web::json::value::parse("{}");
         cardNode["playedCard"] = startingCard;
-        cardNode["childrenNodes"] = json::value::parse("[]");
+        cardNode["childrenNodes"] = web::json::value::parse("[]");
 
         obj["played"] = cardNode;
 
         sendMessage(obj.serialize());
     }
 
-    void playCardAtPlayer(CardTreeInternalNode* tree, int targetPlayerId)
+    /**
+     * plays given tree at player with given id
+     * @param tree tree to play
+     * @param targetPlayerId what to play against
+     */
+    void playCardAtPlayer(CardTreeInternalNode *tree, int targetPlayerId)
     {
         int playerId = gameplayState->playerId;
         int gameplayId = gameplayState->gameplayId;
-        string msgType = "PlayedCardsRequest";
+        std::string msgType = "PlayedCardsRequest";
 
-        json::value obj = json::value::parse("{}");
-        obj["playerId"] = json::value(playerId);
-        obj["gamePlayId"] = json::value(gameplayId);
-        obj["msgType"] = json::value(msgType);
-        obj["updateId"] = json::value(updateId);
+        web::json::value obj = web::json::value::parse("{}");
+        obj["playerId"] = web::json::value(playerId);
+        obj["gamePlayId"] = web::json::value(gameplayId);
+        obj["msgType"] = web::json::value(msgType);
+        obj["updateId"] = web::json::value(updateId);
 
-        json::value startingCard = json::value::parse("{}");;
-        startingCard["type"] = json::value("PlayedStartingCardAtPlayer");
+        web::json::value startingCard = web::json::value::parse("{}");;
+        startingCard["type"] = web::json::value("PlayedStartingCardAtPlayer");
         startingCard["card"] = mainPlayer->findCardById(tree->cardId)->toJson();
-        startingCard["whoPlayedId"] = json::value(playerId);
-        startingCard["targetPlayerId"] = json::value(targetPlayerId);
+        startingCard["whoPlayedId"] = web::json::value(playerId);
+        startingCard["targetPlayerId"] = web::json::value(targetPlayerId);
 
-        json::value cardTree = json::value::parse("{}");
+        web::json::value cardTree = web::json::value::parse("{}");
         cardTree["playedCard"] = startingCard;
-        cardTree["childrenNodes"] = json::value::parse("[]");
+        cardTree["childrenNodes"] = web::json::value::parse("[]");
 
         obj["played"] = cardTree;
 
         sendMessage(obj.serialize());
     }
 
-    void connect()
+    /**
+     * establishes connection with server, needs to be called once
+     * @param serverAddress address of server
+     */
+    void connect(std::string serverAddress)
     {
         try
         {
-            client.connect(U("ws://localhost:9000/ws")).get();
-            cout << "connected!" << "\n";
+            std::cout << "connecting to " << serverAddress << "\n";
+            client.connect(serverAddress).get();
+            std::cout << "connected!" << "\n";
         }
         catch (const websocket_exception &ex)
         {
-            cout << ex.what() << "\n";
+            std::cout << ex.what() << "\n";
         }
     }
 
+    /**
+     * sends message to start game and waits for other players to join and to start game
+     */
     void startGame()
     {
-        cout << "sending startGame request\n";
+        std::cout << "sending startGame request\n";
         QuickMultiplayerGameRequest request;
         sendMessage(request.toString());
         auto messageString = receive();
         gameplayState = new GameplayStateUpdate(messageString);
-        cout << "started game! \n";
+        std::cout << "started game! \n";
 
     }
 };

@@ -2,6 +2,7 @@ package actors
 
 import scala.language.implicitConversions
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
 
 import akka.actor._
 import akka.event.{ Logging, DiagnosticLoggingAdapter }
@@ -157,7 +158,7 @@ class MultiplayerGameActor(gamesManager: ActorRef, gamePlayId: Long)(implicit ec
       playersAndDrivers.playersWithNoDriver.headOption match {
         case None => {}
         case Some(playerId) =>
-          val bot = context.actorOf(BotActor.props(self, gamePlayId, playerId), s"BotActor-g$gamePlayId-p$playerId")
+          val bot = context.actorOf(BotActor.props(self, gamePlayId, playerId, 1500.millisecond), s"BotActor-g$gamePlayId-p$playerId")
           val driver = BotDriver(bot)
           playersAndDrivers = playersAndDrivers.withDriver(driver, playerId)
           log.debug(s"bot $bot entered the game as player of id=$playerId")

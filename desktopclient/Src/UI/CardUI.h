@@ -6,25 +6,14 @@
 #include <QtWidgets/QLabel>
 #include <Src/Core/Card.h>
 
+/**
+ * widget of a single card
+ */
 class CardUI : public QWidget
 {
 
 
 public:
-
-    void addPlayerAvatar(int playingPlayerId)
-    {
-        avatar = new QLabel(this);
-        avatar->show();
-        auto avatarPath = ":/Assets/avatar" + to_string(1 + (playingPlayerId % 5)) + ".png";
-        avatar->setPixmap(QPixmap(QString::fromStdString(avatarPath)).scaled(30, 50,
-                                                                             Qt::KeepAspectRatio,
-                                                                             Qt::SmoothTransformation));
-    }
-
-    QLabel *avatar;
-    QLabel *cardImage;
-    Card card;
 
     CardUI(QWidget *parent, Card card) : QWidget(parent), card(card)
     {
@@ -34,14 +23,28 @@ public:
         show();
     }
 
+    Card card;
 
 private:
 
-    QPixmap getCardImage(string type)
+    QLabel *avatar;
+    QLabel *cardImage;
+
+    void addPlayerAvatar(int playingPlayerId)
     {
-        string basePath = ":/Assets/Cards/";
-        string cardName = "";
-        string extension = ".jpg";
+        avatar = new QLabel(this);
+        avatar->show();
+        auto avatarPath = ":/Assets/avatar" + std::to_string(1 + (playingPlayerId % 5)) + ".png";
+        avatar->setPixmap(QPixmap(QString::fromStdString(avatarPath)).scaled(30, 50,
+                                                                             Qt::KeepAspectRatio,
+                                                                             Qt::SmoothTransformation));
+    }
+
+    QPixmap getCardImage(std::string type)
+    {
+        std::string basePath = ":/Assets/Cards/";
+        std::string cardName = "";
+        std::string extension = ".jpg";
         if (type == "attack")
             cardName = "atak";
         if (type == "mass_attack")

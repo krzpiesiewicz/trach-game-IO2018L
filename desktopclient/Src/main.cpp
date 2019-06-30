@@ -15,21 +15,17 @@
 #include <Src/UI/InGameUI.h>
 #include <Src/UI/GUIUpdater.h>
 #include <thread>
+#include <dirent.h>
 
-
-using namespace web;
 using namespace web::websockets::client;
 using namespace web::json;
-using namespace std;
 
-volatile int lastId = 0;
-
+/** waits for new game state and when received, updates whole GUI
+  */
 void updateGUI(GUIUpdater *updater, ServerConnection* connection, InGameUI *mainUI)
 {
-    lastId++;
     auto gameStateResponse = connection->getCurrentState();
     auto gameState = gameStateResponse->gameState;
-    gameState.get()->roundId = lastId;
     mainUI->isUpdating = true;
     updater->sendUpdate(gameState.get());
     while (mainUI->isUpdating)
@@ -38,18 +34,24 @@ void updateGUI(GUIUpdater *updater, ServerConnection* connection, InGameUI *main
     }
 }
 
+/** established connection with server, starts application
+  */
 int main(int argc, char *argv[])
 {
+    std::fstream config;
+    config.open( "config.txt", std::ios::in);
+    std::string address;
+    config >> address;
+    config >> address;
 
     ServerConnection* connection = new ServerConnection;
-    connection->connect();
+    connection->connect(address);
     connection->startGame();
 
     auto gameStateResponse = connection->getCurrentState();
 
-    int playerId = connection->gameplayState->playerId;
+    int playerId = connection->getMainPlayerId();
     auto &gameState = gameStateResponse->gameState;
-    gameState.get()->roundId = lastId;
 
     QApplication app(argc, argv);
     QWidget window;
@@ -62,7 +64,7 @@ int main(int argc, char *argv[])
     QObject::connect(updater, SIGNAL(sendUpdate(GameState * )), mainUI, SLOT(setData(GameState * )));
     auto loopTask = pplx::task<void>([&]()
                                  {
-                                     while (lastId >= 0)
+                                     while (true)
                                      {
                                          updateGUI(updater, connection, mainUI);
                                      }

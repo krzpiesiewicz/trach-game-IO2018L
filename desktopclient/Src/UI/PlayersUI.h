@@ -7,24 +7,34 @@
 #include <Src/Core/Player.h>
 #include <QtWidgets/QVBoxLayout>
 #include "PlayerInfoUI.h"
-
-using namespace std;
-
+/**
+ * QWidget showing all players that are currently in game
+ */
 class PlayersUI : public QWidget
 {
 Q_OBJECT
 public:
-    vector<PlayerInfoUI*>playersInfo;
-    QVBoxLayout *layout = new QVBoxLayout();
-    QWidget* emptySpace = nullptr;
-    ServerConnection* connection;
 
+    /**
+     * layout this widget is attached to
+     */
+    QVBoxLayout *layout = new QVBoxLayout();
+
+    /**
+     *
+     * @param parent parent of widget
+     * @param connection connection to server
+     */
     PlayersUI(QWidget* parent, ServerConnection* connection) : QWidget(parent)
     {
         this->connection = connection;
     }
 
-    void setData(vector<Player>players)
+    /**
+     * Updates data of widget
+     * @param players updated players information
+     */
+    void setData(std::vector<Player>players)
     {
         for (int i = 0; i < (int)playersInfo.size();i++)
         {
@@ -49,6 +59,14 @@ public:
         layout->addWidget(emptySpace, 100);
 
     }
+
+private:
+
+    std::vector<PlayerInfoUI*>playersInfo;
+
+    QWidget* emptySpace = nullptr;
+
+    ServerConnection* connection;
 };
 
 #endif //TRACH_PLAYERSUI_H

@@ -4,6 +4,12 @@
 
 #include "PlayerInfoUI.h"
 
+/**
+ *
+ * @param parent parent of this widget
+ * @param player player this widget represents
+ * @param connection connection to server
+ */
 PlayerInfoUI::PlayerInfoUI(QWidget *parent, Player &player, ServerConnection *connection)
         : QWidget(parent)
 {
@@ -34,17 +40,25 @@ PlayerInfoUI::PlayerInfoUI(QWidget *parent, Player &player, ServerConnection *co
     setAcceptDrops(true);
 }
 
+/**
+ * updates GUI based on new data
+ * @param player player data this widget will represent
+ */
 void PlayerInfoUI::setData(Player &player)
 {
     nickLabel->setText(QString::fromStdString(player.name));
     healthBarUI->setHealthValue(player.health);
-    auto avatarPath = ":/Assets/avatar" + to_string(1 + (player.id % 5)) + ".png";
+    auto avatarPath = ":/Assets/avatar" + std::to_string(1 + (player.id % 5)) + ".png";
     avatar->setPixmap(QPixmap(QString::fromStdString(avatarPath)).scaled(60, 100,
                                                                          Qt::KeepAspectRatio,
                                                                          Qt::SmoothTransformation));
 
 }
 
+/**
+ * draws frame around widget
+ * @e event to handle
+ */
 void PlayerInfoUI::paintEvent(QPaintEvent *e)
 {
     QPainter painter(this);
@@ -58,6 +72,10 @@ void PlayerInfoUI::paintEvent(QPaintEvent *e)
 
 }
 
+/**
+ * (function required by Qt for drag-drop system)
+ * @param event drag leave event to handle
+ */
 void PlayerInfoUI::dragLeaveEvent(QDragLeaveEvent *event)
 {
     QImage backgroundImage;
@@ -66,6 +84,10 @@ void PlayerInfoUI::dragLeaveEvent(QDragLeaveEvent *event)
     background->setPixmap(QPixmap::fromImage(backgroundImage));
 }
 
+/**
+ * (function required by Qt for drag-drop system)
+ * @param event drag enter event to handle
+ */
 void PlayerInfoUI::dragEnterEvent(QDragEnterEvent *event)
 {
     if (event->mimeData()->hasFormat("cardTreeToPlay"))
@@ -83,6 +105,10 @@ void PlayerInfoUI::dragEnterEvent(QDragEnterEvent *event)
     }
 }
 
+/**
+ * (function required by Qt for drag-drop system) accepts drag movement if it was in right format
+ * @param event drag move event to handle
+ */
 void PlayerInfoUI::dragMoveEvent(QDragMoveEvent *event)
 {
     if (event->mimeData()->hasFormat("cardTreeToPlay"))
@@ -94,6 +120,10 @@ void PlayerInfoUI::dragMoveEvent(QDragMoveEvent *event)
     }
 }
 
+/**
+ * (function required by Qt for drag-drop system) handles received drop event playing card at player if event was in right format
+ * @param event received drop event
+ */
 void PlayerInfoUI::dropEvent(QDropEvent *event)
 {
     if (event->mimeData()->hasFormat("cardTreeToPlay"))

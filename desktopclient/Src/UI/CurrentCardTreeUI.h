@@ -7,6 +7,9 @@
 #include "CardUI.h"
 #include "HandUI.h"
 
+/**
+ * widget of a current table where player can play cards
+ */
 class CurrentCardTreeUI : public QWidget
 {
 public:
@@ -52,7 +55,7 @@ public:
 private:
     GameState *currentState;
     bool hasCard;
-    vector<CardUI *> cards;
+    std::vector<CardUI *> cards;
     HandUI* handUI;
 };
 

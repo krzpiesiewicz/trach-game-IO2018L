@@ -1,7 +1,4 @@
 import org.scalatest.FunSuite
-import com.typesafe.scalalogging.Logger
-
-import game.Logging.logger
 
 import game.core._
 import game.core.actions._

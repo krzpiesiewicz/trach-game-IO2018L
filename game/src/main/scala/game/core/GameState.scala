@@ -11,13 +11,18 @@ trait GameState {
   
   lazy val cardsMap = attributes.forceGet[AllCards].cardsMap
   
-  lazy val coveredCardsStack = attributes.forceGet[CoveredCardsStack]
-  
-  lazy val discardedCardsStack = attributes.forceGet[DiscardedCardsStack]
+  lazy val cardsStacks = attributes.forceGet[CardsStacks]
   
   lazy val globalActiveCards = attributes.forceGet[GlobalActiveCards]
   
   lazy val roundsManager = attributes.forceGet[RoundsManager]
+  
+  lazy val cardTrees = attributes.forceGet[CardTrees]
+  
+  /**
+   * Throws an exception if there is no card of id = cardObj.id.
+   */
+  def card(cardObj: Card): Card = card(cardObj.id)
   
   /**
    * Throws an exception if there is no card of id = cardId.
@@ -25,7 +30,7 @@ trait GameState {
   def card(cardId: CardId): Card = cardsMap.get(cardId).get
   
   /**
-   * Throws an exception if there is no player of id = playerId.
+   * Throws an exception if there is no player of id = playerObj.id.
    */
   def player(playerObj: Player): Player = player(playerObj.id)
   
@@ -45,6 +50,11 @@ trait GameState {
   def withNextRound: GameState = this transformed {
     case rm: RoundsManager => rm.withNextRound(attributes.forceGet[Players].circleOfPlayers)
   }
+  
+  /**
+   * Checks if it is beginning of the round.
+   */
+  def isBeginningOfTheRound: Boolean = cardTrees.trees.isEmpty
 }
 
 case class NormalState(override val attributes: AttributesSet[GlobalAttribute]) extends GameState {
@@ -68,28 +78,3 @@ trait EndState extends GameState {
 case class NoOneAlive(override val attributes: AttributesSet[GlobalAttribute]) extends EndState
 
 case class GameWin(override val attributes: AttributesSet[GlobalAttribute], winner: Player) extends EndState
-
-object GameState {
-  
-  def removeCardFromPlayersHand(player: Player, card: Card, state: GameState): GameState = {
-    val p = state.player(player)
-    if (p.hand.cards contains card) {
-      val coveredStack = state.attributes.forceGet[CoveredCardsStack]
-      val (poppedCardOpt, restOfStack) = coveredStack.pop match {
-        case Some((poppedCard, restOfStack)) => (Some(poppedCard), restOfStack)
-        case None => (None, coveredStack)
-      }
-      state transformed {
-        case stack: CoveredCardsStack => restOfStack;
-        case players: Players => players.updatePlayer(p.transformed {
-          case hand: Hand => hand.replacedCard(card, poppedCardOpt);
-        });
-      }
-    } else
-      state
-  }
-  
-  def putCardOnDiscardedStack(card: Card, state: GameState): GameState = state transformed {
-    case stack: DiscardedCardsStack => stack.push(card);
-  }
-}

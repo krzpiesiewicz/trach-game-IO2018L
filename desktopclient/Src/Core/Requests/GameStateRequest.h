@@ -2,25 +2,28 @@
 #ifndef TRACH_GAMESTATEREQUEST_H
 #define TRACH_GAMESTATEREQUEST_H
 
-using namespace std;
-using namespace web;
-
+/**
+ * request to get latest gameState
+ */
 class GameStateRequest
 {
 public:
+
     GameStateRequest(const int gamePlayId)
     {
-        obj = json::value();
-        obj["msgType"] = json::value("GameStateRequest");
-        obj["gamePlayId"] = json::value(gamePlayId);
+        obj = web::json::value();
+        obj["msgType"] = web::json::value("GameStateRequest");
+        obj["gamePlayId"] = web::json::value(gamePlayId);
     }
 
-    json::value obj;
-
-    string toString()
+    std::string toString()
     {
         return obj.serialize();
     }
+
+private:
+
+    web::json::value obj;
 
 };
 

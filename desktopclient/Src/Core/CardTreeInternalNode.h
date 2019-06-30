@@ -4,14 +4,22 @@
 
 #include <vector>
 
-using namespace std;
-
+/**
+ * helper class used to transfer data about card trees between UI components
+ */
 class CardTreeInternalNode
 {
 public:
 
+    /**
+     * id of card this node represents
+     */
     int cardId;
-    vector<CardTreeInternalNode>children;
+
+    /**
+     * cards one level lower in tree hierarchy than this node
+     */
+    std::vector<CardTreeInternalNode>children;
 };
 
 

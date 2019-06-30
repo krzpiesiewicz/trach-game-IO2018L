@@ -6,13 +6,17 @@
 #include "PlayedCardInTree.h"
 #include <cpprest/json.h>
 
-using namespace std;
-using namespace web;
-
+/**
+ * single node in card tree
+ */
 class CardNode
 {
 public:
-    explicit CardNode(json::value obj)
+
+    /**
+     * @param obj object to deserialize from
+     */
+    explicit CardNode(web::json::value obj)
     {
         playedCard = new PlayedCardInTree(obj["playedCard"]);
         for (auto& rawChild : obj["childrenNodes"].as_array())
@@ -21,8 +25,15 @@ public:
         }
     }
 
+    /**
+     * card this object represents
+     */
     PlayedCardInTree* playedCard;
-    vector<CardNode>childrenNodes;
+
+    /**
+     * cards one level below in tree hierarchy than playedCard
+     */
+    std::vector<CardNode>childrenNodes;
 };
 
 

@@ -15,11 +15,11 @@ Multiplayer card game with bots based on an existing card game. System designed 
 
 # Documents in Polish
 - [Project description](doc/Trach%20Game.pdf)
-- [Rules of the game](doc/Trach.%20Zasady%20gry.%20Podstawka.pdf)
+- [Game rules](doc/Trach.%20Zasady%20gry.%20Podstawka.pdf)
 - [Functional requirements](doc/Wymagania%20funkcjonalne.pdf)
 - [Use cases](doc/Przypadki%20użycia.pdf)
 - [Non-functional requirements](doc/Wymagania%20niefunkcjonalne.pdf)
-- [GUI description](doc/Opis%20GUI.pdf) [gui.png](doc/gui.png)
+- [GUI description](doc/Opis%20GUI.pdf) (graphics: [gui.png](doc/gui.png))
 - [Technical specifications](doc/Specyfikacja%20techniczna.pdf)
 - [System models and protocols](doc/Modele%20i%20komunikacja.pdf)
 - [Test plan](doc/Testowanie.pdf)
